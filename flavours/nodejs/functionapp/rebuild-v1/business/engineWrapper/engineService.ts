@@ -28,9 +28,11 @@ class EngineService {
 
     constructor(logger: { log: (message: string) => void }) {
         this.Logger = logger;
-        this.EngineWrapper = new EngineWrapper(__dirname + (process.platform == "win32" ?
-            "\\lib\\windows\\SDK\\glasswall.classic.dll"
-            : "/lib/linux/SDK/libglasswall.classic.so"));
+        const path = (process.platform == "win32" ?
+            "..\\..\\..\\lib\\windows\\SDK\\glasswall.classic.dll"
+            : "../../../lib/linux/SDK/libglasswall.classic.so");
+        this.Logger.log("Loading engine from " + path);
+        this.EngineWrapper = new EngineWrapper(path);
     }
 
     Finalise(): void {
@@ -50,9 +52,8 @@ class EngineService {
     }
 
     GetFileType(buffer: Buffer): FileTypeResponse {
-        if (!buffer) 
-        {
-            throw "Buffer was not defined"; 
+        if (!buffer) {
+            throw "Buffer was not defined";
         }
 
         try {
@@ -104,8 +105,7 @@ class EngineService {
     }
 
     Rebuild(buffer: Buffer, fileType: string): RebuildResponse {
-        if (!buffer) 
-        {
+        if (!buffer) {
             throw "Buffer was not defined";
         }
 
@@ -130,7 +130,7 @@ class EngineService {
                     protectedFileLength: 0
                 };
             }
-            
+
             this.Logger.log("Successfully rebuilt file.");
 
             return {

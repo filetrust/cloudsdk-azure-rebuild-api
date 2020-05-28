@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy:linux && npm run copy:linux:dependencies && npm run copy:windows && npm run copy:dependencies",
     "watch": "tsc -w",
     "prestart": "npm run build",
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "echo \"No tests yet...\"",
+    "copy:linux:dependencies": "cpy ..\\..\\..\\libfreetype.so.6 .\\",
+    "copy:linux": "cpy ..\\..\\..\\lib\\linux\\SDK\\libglasswall.classic.so .\\dist\\lib\\linux\\SDK\\",
+    "copy:windows": "cpy ..\\..\\..\\lib\\windows\\SDK\\glasswall.classic.dll .\\dist\\lib\\windows\\SDK\\"
   },
   "dependencies": {
     "@azure/functions": "^1.0.2-beta2",
@@ -16,7 +19,7 @@
     "@types/node": "^12.12.31",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
-    "applicationinsights": "^1.7.3",
+    "applicationinsights": "^1.7.5",
     "async": "^3.2.0",
     "azure-storage": "^2.10.3",
     "eslint": "^6.8.0",
@@ -25,20 +28,23 @@
     "eslint-plugin-flowtype": "3.13.0",
     "eslint-plugin-import": "2.18.2",
     "eslint-plugin-jsx-a11y": "6.2.3",
-    "ffi-napi": "^3.0.0",
+    "cpx": "^1.5.0",
+    "ffi-napi": "^2.5.0",
+    "ref-array-napi": "^1.2.1",
+    "ref-napi": "^2.0.1",
+    "ref-wchar-napi": "^1.0.2",
     "form-data": "^3.0.0",
     "iconv-lite": "^0.5.1",
     "jszip": "^3.3.0",
     "moment": "^2.26.0",
     "moment-duration-format": "^2.3.2",
     "object-to-xml": "^2.0.0",
-    "ref-napi": "^2.0.1",
     "typescript": "^3.3.3"
   },
   "devDependencies": {
     "@types/ffi-napi": "^2.4.2",
-    "@types/jszip": "^3.1.7",
     "@types/ref-napi": "^1.4.1",
+    "@types/jszip": "^3.1.7",
     "babel-eslint": "^10.1.0",
     "eslint-plugin-react": "^7.19.0"
   }

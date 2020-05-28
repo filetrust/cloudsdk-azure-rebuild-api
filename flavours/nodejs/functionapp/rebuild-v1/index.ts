@@ -1,9 +1,22 @@
+import appInsights = require("applicationinsights");
+appInsights.setup("<instrumentation_key>")
+    .setAutoDependencyCorrelation(true)
+    .setAutoCollectRequests(true)
+    .setAutoCollectPerformance(true)
+    .setAutoCollectExceptions(true)
+    .setAutoCollectDependencies(true)
+    .setAutoCollectConsole(true)
+    .setUseDiskRetryCaching(true)
+    .start();
+
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { requestHandlerArgs } from "./requestHandler";
 import RequestHandlerFactory from "./requestHandlerFactory";
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
     context.log("HTTP trigger function processed a request.");
+
+    context.res.setHeader("cwd", process.cwd());
 
     const handler = RequestHandlerFactory.GetRequestHandler(req.url, context);
 
@@ -39,14 +52,14 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     finally {        
         try {
             if (global.gc) {
-                console.log("GC ran");
+                context.log("GC ran");
                 global.gc();
                 context.res.setHeader("GC-RAN", "true");
             }
 
             context.res.setHeader("GC-RAN", "false");
         } catch (e) {
-            console.log("`node --expose-gc index.js`");
+            context.log("`node --expose-gc index.js`");
             process.exit();
         }
     }

@@ -23,7 +23,7 @@ class EngineWrapper {
         {
             throw "Cannot find DLL at " + libPath;
         }
-
+        
         this._GlasswallEngine = ffi.DynamicLibrary(libPath);
         this._GWFileErrorMsg = new MethodWrapper(this._GlasswallEngine, "GWFileErrorMsg", wchar_t, []);
         this._GWFileDone = new MethodWrapper(this._GlasswallEngine, "GWFileDone", "int", []);

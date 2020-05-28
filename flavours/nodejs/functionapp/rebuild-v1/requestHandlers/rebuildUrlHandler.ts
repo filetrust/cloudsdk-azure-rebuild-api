@@ -61,9 +61,9 @@ const getResponseHeaders = (args: requestHandlerArgs): { [header: string]: strin
     return args.headers;
 };
 
-const loadEngine = (): { engineService: EngineService; version: string; engineLoadTime: string } => {
+const loadEngine = (logger: { log: (message: string) => void }): { engineService: EngineService; version: string; engineLoadTime: string } => {
     const timer = Timer.StartNew();
-    const engineService = new EngineService(this.Logger);
+    const engineService = new EngineService(logger);
     const version = engineService.GetLibraryVersion();
 
     return {
@@ -124,7 +124,7 @@ class RebuildUrlRequestHandler implements RequestHandler {
             };
         }
 
-        const engineLoadResponse = loadEngine();
+        const engineLoadResponse = loadEngine(this.Logger);
 
         try {
             responseHeaders[Metric.EngineLoadTime] = engineLoadResponse.engineLoadTime;
@@ -191,6 +191,13 @@ class RebuildUrlRequestHandler implements RequestHandler {
                 rawBody: ""
             };
         }
+        catch(err) {
+            return {
+                statusCode: 500,
+                rawBody: JSON.stringify(err),
+                headers: responseHeaders
+            };
+        }
         finally {
             engineLoadResponse.engineService.Finalise();
             engineLoadResponse.engineService = null;
@@ -198,4 +205,4 @@ class RebuildUrlRequestHandler implements RequestHandler {
     }
 }
 
-export default RebuildUrlRequestHandler;
+export default RebuildUrlRequestHandler; 
