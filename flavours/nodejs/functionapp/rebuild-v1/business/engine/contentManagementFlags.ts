@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import o2x from "object-to-xml";
+import o2x = require("object-to-xml");
 
-const cloudFlagToEngineFlag = (cloudFlag): string => {
+const cloudFlagToEngineFlag = (cloudFlag: number): string => {
     if (cloudFlag === 0)
     {
         return "allow";

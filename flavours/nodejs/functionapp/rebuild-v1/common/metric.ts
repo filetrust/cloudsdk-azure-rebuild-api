@@ -6,6 +6,7 @@ const Metric = {
     Version:  "gw-version",
     RebuildTime:  "gw-metric-rebuild",
     FormFileReadTime:  "gw-metric-formfileread",
+    ProtectedFileSize:  "gw-metric-protectedfilesize",
     UploadSize:  "gw-metric-uploadsize",
     UploadTime:  "gw-metric-upload",
     UploadEtag:  "gw-put-file-etag",

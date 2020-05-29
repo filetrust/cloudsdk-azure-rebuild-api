@@ -1,4 +1,4 @@
-import ContentManagementFlags from "../../business/engineWrapper/contentManagementFlags";
+import ContentManagementFlags from "../../business/engine/contentManagementFlags";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default class UrlRequest {
@@ -49,9 +49,5 @@ export default class UrlRequest {
         catch (err) {
             this.Errors["body"] = "The request was not a valid JSON.";
         }
-    }
-
-    hasErrors(): boolean {
-        return Object.keys(this.Errors).length > 0;
     }
 }

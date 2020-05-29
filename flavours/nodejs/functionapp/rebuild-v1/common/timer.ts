@@ -1,6 +1,13 @@
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const NS_PER_TICK = 1e2;
 
 import moment = require("moment");
+
+type functionTimeResult<TResult> = { 
+    result?: TResult;
+    elapsed: string;
+}
 
 class Timer {
     #time: [number, number]
@@ -29,6 +36,18 @@ class Timer {
     static StartNew(): Timer {
         return new Timer();
     }
+
+    // static ExecuteAndMeasure<TResult>(func: any): functionTimeResult<TResult> {
+    //     const ret: functionTimeResult<TResult> = {
+    //         elapsed: ""
+    //     };
+        
+    //     const timer = Timer.StartNew();
+    //     ret.result = func();
+    //     ret.elapsed = timer.Elapsed();
+
+    //     return ret;
+    // }
 }
 
 export default Timer;

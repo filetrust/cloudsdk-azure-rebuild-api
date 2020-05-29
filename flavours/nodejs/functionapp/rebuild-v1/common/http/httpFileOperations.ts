@@ -24,5 +24,12 @@ export const uploadFile = async (fileUrl: string, buf: Buffer): Promise<string> 
         throw response.statusText;
     }
 
-    return response.headers.get("etag");
+    const etag = response.headers.get("etag");
+
+    if (!etag)
+    {
+        return "\"\"";
+    }
+
+    return etag;
 };

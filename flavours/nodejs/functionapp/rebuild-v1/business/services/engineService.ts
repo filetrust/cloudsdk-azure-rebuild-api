@@ -1,8 +1,8 @@
-import Enum from "../enum";
-import FileType from "../fileType";
-import EngineOutcome from "./engineOutcome";
-import EngineWrapper from "./engineWrapper";
-import ContentManagementFlags from "./contentManagementFlags";
+import Enum from "../../common/enum";
+import FileType from "../engine/enums/fileType";
+import EngineOutcome from "../engine/enums/engineOutcome";
+import LibGlasswallClassic from "../engine/libGlasswallClassic";
+import ContentManagementFlags from "../engine/contentManagementFlags";
 
 export type EngineStatusResponse = {
     engineOutcome: number;
@@ -23,27 +23,29 @@ export type RebuildResponse = {
 }
 
 class EngineService {
-    EngineWrapper: EngineWrapper;
+    Sdk: LibGlasswallClassic;
     Logger: { log: (message: string) => void };
 
     constructor(logger: { log: (message: string) => void }) {
         this.Logger = logger;
-        const path = (process.platform == "win32" ?
-            "..\\..\\..\\lib\\windows\\SDK\\glasswall.classic.dll"
-            : "../../../lib/linux/SDK/libglasswall.classic.so");
-        this.Logger.log("Loading engine from " + path);
-        this.EngineWrapper = new EngineWrapper(path);
+        const path = process.cwd() + (process.platform == "win32" ?
+            "\\dist\\lib\\windows\\SDK\\glasswall.classic.dll"
+            : "/dist/lib/linux/SDK/libglasswall.classic.so");
+            
+        logger.log("Loading engine from " + path);
+        this.Sdk = new LibGlasswallClassic(path);
+        logger.log("Engine successfully loaded from " + path);
     }
 
-    Finalise(): void {
-        this.EngineWrapper.Finalise();
-        this.EngineWrapper = null;
+    Dispose(): void {
+        this.Sdk.Dispose();
+        this.Sdk = null;
         this.Logger = null;
     }
 
     GetLibraryVersion(): string {
         try {
-            return this.EngineWrapper.GWFileVersion();
+            return this.Sdk.GWFileVersion();
         }
         catch (err) {
             this.Logger.log(err);
@@ -57,7 +59,7 @@ class EngineService {
         }
 
         try {
-            const fileType = this.EngineWrapper.GWDetermineFileTypeFromFileInMem(buffer);
+            const fileType = this.Sdk.GWDetermineFileTypeFromFileInMem(buffer);
             const fileTypeName = Enum.GetString(FileType, fileType);
 
             this.Logger.log("File Type: '" + fileType + "' - '" + fileTypeName + "'");
@@ -83,11 +85,11 @@ class EngineService {
     SetConfiguration(contentManagementFlags: ContentManagementFlags): EngineStatusResponse {
         try {
             const xmlConfig = contentManagementFlags.Adapt();
-            const engineOutcome = this.EngineWrapper.GWFileConfigXML(xmlConfig);
+            const engineOutcome = this.Sdk.GWFileConfigXML(xmlConfig);
             const engineOutcomeName = Enum.GetString(EngineOutcome, engineOutcome);
 
             if (engineOutcome != EngineOutcome.Success) {
-                const error = this.EngineWrapper.GWFileErrorMsg();
+                const error = this.Sdk.GWFileErrorMsg();
                 throw `Could not set Engine Configuration, status: ${engineOutcomeName} error: ${error}`;
             }
 
@@ -111,14 +113,14 @@ class EngineService {
 
         try {
             const { engineOutcome, protectedFile } =
-                this.EngineWrapper.GWMemoryToMemoryProtect(
+                this.Sdk.GWMemoryToMemoryProtect(
                     buffer,
                     fileType);
 
             const engineOutcomeName = Enum.GetString(EngineOutcome, engineOutcome);
 
             if (engineOutcome != EngineOutcome.Success) {
-                const errorMessage = this.EngineWrapper.GWFileErrorMsg();
+                const errorMessage = this.Sdk.GWFileErrorMsg();
 
                 this.Logger.log("Unable to protect file: " + errorMessage);
 
@@ -138,7 +140,7 @@ class EngineService {
                 engineOutcome,
                 engineOutcomeName,
                 protectedFile,
-                protectedFileLength: protectedFile.length,
+                protectedFileLength: protectedFile?.length,
             };
         }
         catch (err) {
@@ -153,7 +155,7 @@ class EngineService {
 
     GetErrorMessage(): string {
         try {
-            return this.EngineWrapper.GWFileErrorMsg();
+            return this.Sdk.GWFileErrorMsg();
         }
         catch (err) {
             this.Logger.log("Error getting Error from engine: " + err);

@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "tsc && npm run copy:linux && npm run copy:linux:dependencies && npm run copy:windows && npm run copy:dependencies",
+    "build": "tsc && npm run copy:linux && npm run copy:linux:dependencies1 && npm run copy:linux:dependencies2 && npm run copy:linux:dependencies3 && npm run copy:linux:dependencies4 && npm run copy:windows",
     "watch": "tsc -w",
     "prestart": "npm run build",
     "start": "func start",
     "test": "echo \"No tests yet...\"",
-    "copy:linux:dependencies": "cpy ..\\..\\..\\libfreetype.so.6 .\\",
+    "copy:linux:dependencies1": "cpy ..\\..\\..\\libfreetype.so.6 .\\",
+    "copy:linux:dependencies2": "cpy ..\\..\\..\\libfreetype.so.6 .\\dist",
+    "copy:linux:dependencies3": "cpy ..\\..\\..\\libfreetype.so.6 .\\dist\\rebuild-v1\\business\\engine\\",
+    "copy:linux:dependencies4": "cpy ..\\..\\..\\libfreetype.so.6 .\\dist\\lib\\linux\\SDK\\",
     "copy:linux": "cpy ..\\..\\..\\lib\\linux\\SDK\\libglasswall.classic.so .\\dist\\lib\\linux\\SDK\\",
     "copy:windows": "cpy ..\\..\\..\\lib\\windows\\SDK\\glasswall.classic.dll .\\dist\\lib\\windows\\SDK\\"
   },
@@ -43,8 +46,8 @@
   },
   "devDependencies": {
     "@types/ffi-napi": "^2.4.2",
-    "@types/ref-napi": "^1.4.1",
     "@types/jszip": "^3.1.7",
+    "@types/ref-napi": "^1.4.1",
     "babel-eslint": "^10.1.0",
     "eslint-plugin-react": "^7.19.0"
   }
