@@ -3,22 +3,24 @@ import EngineService from "../../business/services/engineService";
 import Enum from "../../common/enum";
 import FileType from "../../business/engine/enums/fileType";
 import EngineOutcome from "../../business/engine/enums/engineOutcome";
-import UrlRequest from "../../common/models/UrlRequest";
-import { downloadFile, uploadFile } from "../../common/http/httpFileOperations";
-import Metric from "../../common/metric";
+import { multipart, parseMultiPartForm } from "../../common/http/multipartHelper";
 import Timer from "../../common/timer";
+import Metric from "../../common/metric";
+import FormFileRequest from "../../common/models/FormFileRequest";
+import contentDisposition = require("content-disposition");
 
-class RebuildUrlWorkflow extends RebuildWorkflowBase {
+class RebuildFileWorkflow extends RebuildWorkflowBase {
     constructor(logger: { log: (message: string) => void }) {
         super(logger);
     }
 
     async Handle(): Promise<void> {
         let engineService: EngineService;
+        const multipartForm = await this.tryReadForm();
+        let payload: FormFileRequest;
 
         try {
-            const payload = new UrlRequest(this.Request.body);
-
+            payload = new FormFileRequest(multipartForm);
             if (Object.keys(payload.Errors).length) {
                 this.Response.statusCode = 400;
                 this.Response.rawBody = {
@@ -27,19 +29,9 @@ class RebuildUrlWorkflow extends RebuildWorkflowBase {
                 return;
             }
 
-            const fileBuffer = await this.tryDownload(payload);
-
-            if (!fileBuffer) {
-                this.Response.statusCode = 400;
-                this.Response.rawBody = {
-                    error: "Could not download input file"
-                };
-                return;
-            }
-
             engineService = this.loadEngine();
 
-            const fileType = this.detectFileType(engineService, fileBuffer);
+            const fileType = this.detectFileType(engineService, payload.File);
 
             if (fileType.fileTypeName === Enum.GetString(FileType, FileType.Unknown)) {
                 this.Response.statusCode = 422;
@@ -54,7 +46,7 @@ class RebuildUrlWorkflow extends RebuildWorkflowBase {
 
             engineService.SetConfiguration(payload.ContentManagementFlags);
 
-            const rebuildResponse = this.rebuildFile(engineService, fileBuffer, fileType);
+            const rebuildResponse = this.rebuildFile(engineService, payload.File, fileType);
 
             if (rebuildResponse.engineOutcome !== EngineOutcome.Success) {
                 if (rebuildResponse.errorMessage && rebuildResponse.errorMessage.toLowerCase().includes("disallow")) {
@@ -74,69 +66,60 @@ class RebuildUrlWorkflow extends RebuildWorkflowBase {
                 return;
             }
 
-            if (!await this.tryPut(payload, rebuildResponse.protectedFile))
-            {
-                this.Response.statusCode = 400;
-                this.Response.rawBody = {
-                    error: "Could not upload rebuilt file."
-                };
-            }
+            this.Response.headers["Content-Disposition"] = contentDisposition(payload.FileName);
+            this.Response.headers["Content-Length"] =  rebuildResponse.protectedFile.length.toString();
+            this.Response.headers["Content-Type"] = "application/octet-stream";
+            this.Response.rawBody = rebuildResponse.protectedFile;
         }
         catch (err) {
             this.Response.statusCode = 500;
             this.Response.rawBody = {
-                error: err
+                error: err.toString()
             };
         }
         finally {
-            if (engineService)
-            {
+            if (engineService) {
                 engineService.Dispose();
                 engineService = null;
             }
+
+            payload.Dispose();
+            payload = null;
         }
     }
     
-    async tryDownload(payload: UrlRequest): Promise<Buffer> {
+    async tryReadForm(): Promise<multipart[]> {
         const timer = Timer.StartNew();
-        let fileBuffer: Buffer;
 
         try {
-            fileBuffer = await downloadFile(payload.InputGetUrl);
+            const form = await parseMultiPartForm(this.Request.body, this.Request.headers);
 
-            if (fileBuffer && fileBuffer.length) {
-                this.Response.headers[Metric.DownloadTime] = timer.Elapsed();
-                this.Response.headers[Metric.FileSize] = fileBuffer.length;
+            this.Response.headers[Metric.FormFileReadTime] = timer.Elapsed();
 
-                this.Logger.log("File downloaded, file length: '" + fileBuffer.length + "'");
+            const file = form.find(s => s.fieldName.toLowerCase() === "file");
+
+            if (!file) {
+                throw "File could not be found in form";
+            }
+
+            if (file.data && file.data.length) {
+                this.Response.headers[Metric.Base64DecodeTime] = timer.Elapsed();
+                this.Response.headers[Metric.FileSize] = file.data.length;
+
+                this.Logger.log("File found in form, file length: '" + file.data.length + "'");
             } else {
                 throw "File did not contain any data";
             }
+
+            this.Response.headers[Metric.FileSize] = file.data.length;
+
+            return form;
         }
         catch (err) {
-            this.Logger.log("Could not download input file: " + err.stack);
+            this.Logger.log(err);
+            return null;
         }
-
-        return fileBuffer;
-    }
-
-    async tryPut(payload: UrlRequest, protectedFile: Buffer): Promise<boolean> {
-        const timer = Timer.StartNew();
-        let etag: string;
-
-        try {
-            etag = await uploadFile(payload.OutputPutUrl, protectedFile);
-            this.Response.headers[Metric.UploadEtag] = etag;
-            this.Response.headers[Metric.UploadTime] = timer.Elapsed();
-            this.Response.headers[Metric.UploadSize] = protectedFile.length;
-            return true;
-        }
-        catch (err) {
-            this.Logger.log("Could not upload protected file. " + err.stack);
-        }
-
-        return false;
     }
 }
 
-export default RebuildUrlWorkflow; 
+export default RebuildFileWorkflow; 

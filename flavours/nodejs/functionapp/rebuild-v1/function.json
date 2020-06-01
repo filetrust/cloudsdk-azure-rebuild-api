@@ -10,6 +10,7 @@
         "post",
         "put"
       ],
+      "dataType": "binary",
       "route": "{version}/{controller}/{action?}"
     },
     {

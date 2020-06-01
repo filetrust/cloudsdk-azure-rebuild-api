@@ -12,40 +12,8 @@ appInsights.setup("<instrumentation_key>")
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import RequestHandlerFactory from "./service/requestWorkflowFactory";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const exitHandler = (options: { cleanup: any; exit: any }, exitCode: number): any => {
-    if (exitCode || exitCode === 0) {
-        console.log("got exit code: " + exitCode);
-    }
-
-    if (options.exit) {
-        process.exit();
-    }
-};
-
 const executeApi: AzureFunction = async(context: Context, req: HttpRequest) => {
-    const uncaughtException: NodeJS.UncaughtExceptionListener = (err: Error): void => {
-        console.log("UNCAUGHT: " + err);
-        process.exit();
-    };
-    const exited: NodeJS.ExitListener = (code: number): void => {
-        console.log("EXIT: " + code);
-        process.exit(code);
-    };
-
-    process.on("exit", exited);
-    process.on("SIGINT", exitHandler.bind(null, {exit:true}));
-    process.on("SIGUSR1", exitHandler.bind(null, {exit:true}));
-    process.on("SIGUSR2", exitHandler.bind(null, {exit:true}));
-    process.on("uncaughtException", uncaughtException);
-
-    const workflow = RequestHandlerFactory.GetRequestHandler({
-        path: req.url,
-        headers: req.headers,
-        rawBody: req.body,
-        method: req.method,
-        logger: context
-    });
+    const workflow = RequestHandlerFactory.GetRequestHandler(context, req);
 
     await workflow.Handle();
 

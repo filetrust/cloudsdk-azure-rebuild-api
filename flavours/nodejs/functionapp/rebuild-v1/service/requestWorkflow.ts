@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export type RequestWorkflowRequest = {
-    path: string;
+export interface RequestWorkflowRequest {
+    url: string;
     method: string;
-    rawBody?: any;
+    body?: any;
     headers?: { [header: string]: string };
-    logger: { log: (message: string) => void };
 }
 
 export type RequestWorkflowResponse = {

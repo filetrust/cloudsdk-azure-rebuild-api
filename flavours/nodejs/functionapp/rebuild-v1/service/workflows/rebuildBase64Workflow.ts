@@ -3,21 +3,21 @@ import EngineService from "../../business/services/engineService";
 import Enum from "../../common/enum";
 import FileType from "../../business/engine/enums/fileType";
 import EngineOutcome from "../../business/engine/enums/engineOutcome";
-import UrlRequest from "../../common/models/UrlRequest";
-import { downloadFile, uploadFile } from "../../common/http/httpFileOperations";
-import Metric from "../../common/metric";
+import Base64Request from "../../common/models/Base64Request";
 import Timer from "../../common/timer";
+import Metric from "../../common/metric";
 
-class RebuildUrlWorkflow extends RebuildWorkflowBase {
+class RebuildBase64Workflow extends RebuildWorkflowBase {
     constructor(logger: { log: (message: string) => void }) {
         super(logger);
     }
 
     async Handle(): Promise<void> {
         let engineService: EngineService;
+        let payload: Base64Request;
 
         try {
-            const payload = new UrlRequest(this.Request.body);
+            payload = new Base64Request(this.Request.body);
 
             if (Object.keys(payload.Errors).length) {
                 this.Response.statusCode = 400;
@@ -27,12 +27,12 @@ class RebuildUrlWorkflow extends RebuildWorkflowBase {
                 return;
             }
 
-            const fileBuffer = await this.tryDownload(payload);
+            const fileBuffer = await this.tryParseBase64(payload.Base64);
 
             if (!fileBuffer) {
                 this.Response.statusCode = 400;
                 this.Response.rawBody = {
-                    error: "Could not download input file"
+                    error: "Could not parse input file"
                 };
                 return;
             }
@@ -74,13 +74,10 @@ class RebuildUrlWorkflow extends RebuildWorkflowBase {
                 return;
             }
 
-            if (!await this.tryPut(payload, rebuildResponse.protectedFile))
-            {
-                this.Response.statusCode = 400;
-                this.Response.rawBody = {
-                    error: "Could not upload rebuilt file."
-                };
-            }
+            const base64 = rebuildResponse.protectedFile.toString("base64");
+            this.Response.headers["Content-Length"] =  base64.length.toString();
+            this.Response.headers["Content-Type"] =  "text/plain";
+            this.Response.rawBody = base64;
         }
         catch (err) {
             this.Response.statusCode = 500;
@@ -94,21 +91,24 @@ class RebuildUrlWorkflow extends RebuildWorkflowBase {
                 engineService.Dispose();
                 engineService = null;
             }
+
+            payload.Dispose();
+            payload = null;
         }
     }
     
-    async tryDownload(payload: UrlRequest): Promise<Buffer> {
+    async tryParseBase64(base64: string): Promise<Buffer> {
         const timer = Timer.StartNew();
         let fileBuffer: Buffer;
 
         try {
-            fileBuffer = await downloadFile(payload.InputGetUrl);
+            fileBuffer = Buffer.from(base64, "base64");
 
             if (fileBuffer && fileBuffer.length) {
-                this.Response.headers[Metric.DownloadTime] = timer.Elapsed();
+                this.Response.headers[Metric.Base64DecodeTime] = timer.Elapsed();
                 this.Response.headers[Metric.FileSize] = fileBuffer.length;
 
-                this.Logger.log("File downloaded, file length: '" + fileBuffer.length + "'");
+                this.Logger.log("File decoded from Base64, file length: '" + fileBuffer.length + "'");
             } else {
                 throw "File did not contain any data";
             }
@@ -119,24 +119,6 @@ class RebuildUrlWorkflow extends RebuildWorkflowBase {
 
         return fileBuffer;
     }
-
-    async tryPut(payload: UrlRequest, protectedFile: Buffer): Promise<boolean> {
-        const timer = Timer.StartNew();
-        let etag: string;
-
-        try {
-            etag = await uploadFile(payload.OutputPutUrl, protectedFile);
-            this.Response.headers[Metric.UploadEtag] = etag;
-            this.Response.headers[Metric.UploadTime] = timer.Elapsed();
-            this.Response.headers[Metric.UploadSize] = protectedFile.length;
-            return true;
-        }
-        catch (err) {
-            this.Logger.log("Could not upload protected file. " + err.stack);
-        }
-
-        return false;
-    }
 }
 
-export default RebuildUrlWorkflow; 
+export default RebuildBase64Workflow; 

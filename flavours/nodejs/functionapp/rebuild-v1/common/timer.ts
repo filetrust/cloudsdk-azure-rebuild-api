@@ -23,31 +23,18 @@ class Timer {
     Elapsed(): string {
         const [seconds, nanoSeconds] = process.hrtime(this.#time);
         const duration = moment.duration(seconds, "seconds");
-        const hourMinuteSeconds =  duration.get("hours").toString() 
-                                 + ":" 
-                                 + duration.get("minutes").toString() 
-                                 + ":" 
-                                 + duration.get("seconds").toString();
-                                 
-        const ticks = Math.round(nanoSeconds / NS_PER_TICK).toString().padStart(7, "0");
-        return hourMinuteSeconds + "." + ticks;
+        return duration.get("hours").toString().padStart(2, "0")
+            + ":" 
+            + duration.get("minutes").toString().padStart(2, "0")
+            + ":" 
+            + duration.get("seconds").toString().padStart(2, "0")
+            + "."
+            + Math.round(nanoSeconds / NS_PER_TICK).toString().padStart(7, "0");
     }
 
     static StartNew(): Timer {
         return new Timer();
     }
-
-    // static ExecuteAndMeasure<TResult>(func: any): functionTimeResult<TResult> {
-    //     const ret: functionTimeResult<TResult> = {
-    //         elapsed: ""
-    //     };
-        
-    //     const timer = Timer.StartNew();
-    //     ret.result = func();
-    //     ret.elapsed = timer.Elapsed();
-
-    //     return ret;
-    // }
 }
 
 export default Timer;

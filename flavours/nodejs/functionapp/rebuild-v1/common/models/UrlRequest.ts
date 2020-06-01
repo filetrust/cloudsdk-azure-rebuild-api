@@ -1,53 +1,39 @@
 import ContentManagementFlags from "../../business/engine/contentManagementFlags";
+import RequestModelBase from "./RequestModelBase";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export default class UrlRequest {
-    Errors: { [key: string]: string };
+export default class UrlRequest extends RequestModelBase {
     InputGetUrl: string;
     OutputPutUrl: string;
-    ContentManagementPolicy: ContentManagementFlags;
 
     constructor(requestBody: any) {
-        this.Errors = {};
-        let payload = requestBody;
+        super();
 
-        try {
-            if (!requestBody) {
-                this.Errors["Body"] = "Not Supplied";
-                return;
-            }
-
-            if (typeof requestBody == "string")
-            {
-                payload = JSON.parse(requestBody);                
-            }
-
-            if (!payload) {
-                this.Errors["Body"] = "Not Supplied";
-            }
-            else {
-                if (!payload.InputGetUrl) {
-                    this.Errors["InputGetUrl"] = "Not Supplied";
-                }
-
-                if (!payload.OutputPutUrl) {
-                    this.Errors["OutputPutUrl"] = "Not Supplied";
-                }
-
-                this.InputGetUrl = payload.InputGetUrl;
-                this.OutputPutUrl = payload.OutputPutUrl;
-
-                const contentManagementFlags = new ContentManagementFlags();
-
-                if (payload.ContentManagementFlags) {
-                    Object.assign(contentManagementFlags, payload.ContentManagementFlags);
-                }
-
-                this.ContentManagementPolicy = contentManagementFlags;
-            }
+        if (!requestBody) {
+            this.setModelError("Body", "Not Supplied");
+            return;
         }
-        catch (err) {
-            this.Errors["body"] = "The request was not a valid JSON.";
+
+        let payload = requestBody;
+        if (typeof requestBody == "string") {
+            payload = JSON.parse(requestBody);
+        }
+
+        if (!payload) {
+            this.setModelError("Body", "Not Supplied.");
+        }
+        else {
+            if (!payload.InputGetUrl) {
+                this.setModelError("InputGetUrl", "Not Supplied.");
+            }
+
+            if (!payload.OutputPutUrl) {
+                this.setModelError("OutputPutUrl", "Not Supplied.");
+            }
+
+            this.InputGetUrl = payload.InputGetUrl;
+            this.OutputPutUrl = payload.OutputPutUrl;
+            this.loadCmp(payload.ContentManagementFlags);
         }
     }
 }

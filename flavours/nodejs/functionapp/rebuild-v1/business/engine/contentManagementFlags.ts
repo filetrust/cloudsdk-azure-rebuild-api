@@ -43,7 +43,8 @@ class ContentManagementFlags {
                     embedded_files: valueOrDefault(this.PdfContentManagement.EmbeddedFiles),
                     embedded_images: valueOrDefault(this.PdfContentManagement.EmbeddedImages),
                     javascript: valueOrDefault(this.PdfContentManagement.Javascript),
-                    metadata: valueOrDefault(this.PdfContentManagement.Metadata)
+                    metadata: valueOrDefault(this.PdfContentManagement.Metadata),
+                    watermark: ""
                 },
                 pptConfig:
                 {

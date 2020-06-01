@@ -16,7 +16,7 @@ class StatusCodeWorkflow implements RequestWorkflow {
     }
 
     async Handle(): Promise<void> {
-        this.Logger.log("Not Implemented method invoked: " + this.Request.path);
+        this.Logger.log("Status code workflow invoked for url: " + this.Request.url);
     }
 }
 
