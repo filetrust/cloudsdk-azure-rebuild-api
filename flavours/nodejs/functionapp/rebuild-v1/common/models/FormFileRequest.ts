@@ -12,6 +12,7 @@ export default class FormFileRequest extends RequestModelBase {
         if (!form)
         {
             this.setModelError("Form", "Could not read the supplied form.");
+            return;
         }
 
         const filePart = form.find(s => s.fieldName === "file");
@@ -24,6 +25,11 @@ export default class FormFileRequest extends RequestModelBase {
         else
         if (!filePart.data || !filePart.data.length) {
             this.setModelError("File", "File does not have any data");
+            return;
+        }
+
+        if (Object.keys(this.Errors).length)
+        {
             return;
         }
 

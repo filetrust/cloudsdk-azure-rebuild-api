@@ -1,4 +1,3 @@
-import ContentManagementFlags from "../../business/engine/contentManagementFlags";
 import RequestModelBase from "./RequestModelBase";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -29,6 +28,11 @@ export default class UrlRequest extends RequestModelBase {
 
             if (!payload.OutputPutUrl) {
                 this.setModelError("OutputPutUrl", "Not Supplied.");
+            }
+
+            if (Object.keys(this.Errors).length)
+            {
+                return;
             }
 
             this.InputGetUrl = payload.InputGetUrl;

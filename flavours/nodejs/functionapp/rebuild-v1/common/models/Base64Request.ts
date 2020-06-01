@@ -27,6 +27,11 @@ export default class Base64Request extends RequestModelBase {
             this.setModelError("Base64", "Not Supplied");
         }
 
+        if (Object.keys(this.Errors).length)
+        {
+            return;
+        }
+        
         this.Base64 = payload.Base64;
         this.loadCmp(payload.ContentManagementFlags);
     }
