@@ -35,7 +35,8 @@ export default class FormFileRequest extends RequestModelBase {
 
         this.File = filePart.data as Buffer;
         this.FileName = filePart.fileName;
-        this.loadCmp(JSON.parse(cmpPart.data as string));
+
+        this.loadCmp(cmpPart ? JSON.parse(cmpPart.data as string) : null);
     }
 
     Dispose(): void {

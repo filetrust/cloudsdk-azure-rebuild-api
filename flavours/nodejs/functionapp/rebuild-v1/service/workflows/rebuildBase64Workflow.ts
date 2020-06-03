@@ -8,21 +8,34 @@ import Timer from "../../common/timer";
 import Metric from "../../common/metric";
 
 class RebuildBase64Workflow extends RebuildWorkflowBase {
-    constructor(logger: { log: (message: string) => void }) {
-        super(logger);
-    }
-
     async Handle(): Promise<void> {
         let engineService: EngineService;
         let payload: Base64Request;
 
         try {
-            payload = new Base64Request(this.Request.body);
+            let body = this.Request.body;
+            if (this.Request.body instanceof String) {
+                try {
+                    body = JSON.parse(this.Request.body as string);
+                }
+                catch (err) {
+                    this.Response.statusCode = 400;
+                    this.Response.rawBody = {
+                        errors: {
+                            "JSON": "The JSON supplied was invalid"
+                        }
+                    };
+                    this.Logger.log(err);
+                    return;
+                }
+            }
+            
+            payload = new Base64Request(body);
 
             if (Object.keys(payload.Errors).length) {
                 this.Response.statusCode = 400;
                 this.Response.rawBody = {
-                    error: payload.Errors
+                    errors: payload.Errors
                 };
                 return;
             }
@@ -32,7 +45,9 @@ class RebuildBase64Workflow extends RebuildWorkflowBase {
             if (!fileBuffer) {
                 this.Response.statusCode = 400;
                 this.Response.rawBody = {
-                    error: "Could not parse input file"
+                    errors: {
+                        "Base64": "Could not parse base64 of input file"
+                    }
                 };
                 return;
             }
@@ -42,13 +57,7 @@ class RebuildBase64Workflow extends RebuildWorkflowBase {
             const fileType = this.detectFileType(engineService, fileBuffer);
 
             if (fileType.fileTypeName === Enum.GetString(FileType, FileType.Unknown)) {
-                this.Response.statusCode = 422;
-                this.Response.rawBody = {
-                    errors: {
-                        "File Type Detection": "File Type could not be determined to be a supported type"
-                    }
-                };
-
+                this.handleUnsupportedFileType();
                 return;
             }
 
@@ -57,33 +66,17 @@ class RebuildBase64Workflow extends RebuildWorkflowBase {
             const rebuildResponse = this.rebuildFile(engineService, fileBuffer, fileType);
 
             if (rebuildResponse.engineOutcome !== EngineOutcome.Success) {
-                if (rebuildResponse.errorMessage && rebuildResponse.errorMessage.toLowerCase().includes("disallow")) {
-                    this.Response.statusCode = 200;
-                }
-                else {
-                    this.Response.statusCode = 422;
-                }
-
-                this.Response.rawBody = {
-                    errorMessage: "File could not be determined to be a supported file",
-                    engineOutcome: rebuildResponse.engineOutcome,
-                    engineOutcomeName: rebuildResponse.engineOutcomeName,
-                    engineError: rebuildResponse.errorMessage
-                };
-
+                this.handleEngineFailure(rebuildResponse);
                 return;
             }
 
             const base64 = rebuildResponse.protectedFile.toString("base64");
-            this.Response.headers["Content-Length"] =  base64.length.toString();
-            this.Response.headers["Content-Type"] =  "text/plain";
-            this.Response.rawBody = base64;
+            this.Response.rawBody = JSON.stringify({
+                Base64: base64
+            });
         }
         catch (err) {
-            this.Response.statusCode = 500;
-            this.Response.rawBody = {
-                error: err
-            };
+            this.handleError(err);
         }
         finally {
             if (engineService)

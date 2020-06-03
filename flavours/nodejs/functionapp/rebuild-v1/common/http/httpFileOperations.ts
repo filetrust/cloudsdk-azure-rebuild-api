@@ -1,35 +1,34 @@
 import fetch from "node-fetch";
 
-export const downloadFile = async (fileUrl: string): Promise<Buffer> => {
-    const response = await fetch(fileUrl, {
-        method: "GET"
-    });
+export default class HttpFileOperations {
+    static downloadFile = async (fileUrl: string): Promise<Buffer> => {
+        const response = await fetch(fileUrl, {
+            method: "GET"
+        });
 
-    if (!response.ok)
-    {
-        throw response.statusText;
-    }
+        if (!response.ok) {
+            throw response.statusText;
+        }
 
-    return response.buffer();
-};
+        return response.buffer();
+    };
 
-export const uploadFile = async (fileUrl: string, buf: Buffer): Promise<string> => {
-    const response = await fetch(fileUrl, {
-        method: "PUT",
-        body: buf
-    });
+    static uploadFile = async (fileUrl: string, buf: Buffer): Promise<string> => {
+        const response = await fetch(fileUrl, {
+            method: "PUT",
+            body: buf
+        });
 
-    if (!response.ok)
-    {
-        throw response.statusText;
-    }
+        if (!response.ok) {
+            throw response.statusText;
+        }
 
-    const etag = response.headers.get("etag");
+        const etag = response.headers.get("etag");
 
-    if (!etag)
-    {
-        return "\"\"";
-    }
+        if (!etag) {
+            return "\"\"";
+        }
 
-    return etag;
-};
+        return etag;
+    };
+}

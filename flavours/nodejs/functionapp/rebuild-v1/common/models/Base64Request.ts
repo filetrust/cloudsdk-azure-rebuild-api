@@ -4,18 +4,12 @@ import RequestModelBase from "./RequestModelBase";
 export default class Base64Request extends RequestModelBase {
     Base64: string;
 
-    constructor(requestBody: any) {
+    constructor(payload: any) {
         super();
 
-        let payload = requestBody;
-
-        if (!requestBody) {
+        if (!payload) {
             this.setModelError("Body", "Not Supplied");
             return;
-        }
-
-        if (typeof requestBody == "string") {
-            payload = JSON.parse(requestBody);
         }
 
         if (!payload) {
@@ -31,7 +25,7 @@ export default class Base64Request extends RequestModelBase {
         {
             return;
         }
-        
+
         this.Base64 = payload.Base64;
         this.loadCmp(payload.ContentManagementFlags);
     }

@@ -25,12 +25,12 @@ const executeApi: AzureFunction = async(context: Context, req: HttpRequest) => {
         if (global.gc) {
             context.log("GC ran");
             global.gc();
-            context.res.setHeader("GC-RAN", "true");
+            workflow.Response.headers["GC-RAN"] = "true";
         }
 
-        context.res.setHeader("GC-RAN", "false");
+        workflow.Response.headers["GC-RAN"] = "false";
     } catch (e) {
-        context.log("`node --expose-gc index.js`");
+        context.log("Could not run GC.");
     }
 
     return {
@@ -47,11 +47,10 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         return await executeApi(context, req);
     }
     catch (err) {
+        context.log(err);
+        
         return {
             statusCode: 500,
-            body: {
-                error: err
-            },
             headers: {
                 "Content-Type": "application/json"
             }

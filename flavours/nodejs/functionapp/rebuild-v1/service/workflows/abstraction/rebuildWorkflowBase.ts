@@ -1,24 +1,20 @@
-import { RequestWorkflow, RequestWorkflowRequest, RequestWorkflowResponse, ResponseHeaders } from "../../requestWorkflow";
+import { RequestWorkflowRequest, ResponseHeaders, RequestWorkflowBase } from "./requestWorkflow";
 import EngineService, { FileTypeResponse, RebuildResponse } from "../../../business/services/engineService";
 import Metric from "../../../common/metric";
 import Timer from "../../../common/timer";
+import EngineServiceFactory from "../../../business/services/engineServiceFactory";
+import { isError } from "util";
 
-class RebuildWorkflowBase implements RequestWorkflow {
-    Logger: { log: (message: string) => void };
-    Request: RequestWorkflowRequest;
-    Response: RequestWorkflowResponse;
-
-    constructor(logger: { log: (message: string) => void }) {
+class RebuildWorkflowBase extends RequestWorkflowBase {
+    constructor(logger: { log: (message: string) => void }, request: RequestWorkflowRequest) {
+        super(logger, request);
+        
         if (new.target === RebuildWorkflowBase) {
             throw new TypeError("Cannot construct Abstract instances directly");
         }
 
-        this.Logger = logger;
-        this.Response = {
-            headers: RebuildWorkflowBase.GetDefaultHeaders(),
-            statusCode: 200,
-            rawBody: ""
-        };
+        this.Response.statusCode = 200;
+        this.Response.headers = RebuildWorkflowBase.GetDefaultHeaders();
     }
 
     Handle(): Promise<void> {
@@ -27,7 +23,7 @@ class RebuildWorkflowBase implements RequestWorkflow {
 
     loadEngine(): EngineService {
         const timer = Timer.StartNew();
-        const engineService = new EngineService(this.Logger);
+        const engineService = EngineServiceFactory.Create(this.Logger);
         const version = engineService.GetLibraryVersion();
 
         this.Response.headers[Metric.EngineLoadTime] = timer.Elapsed();
@@ -55,7 +51,12 @@ class RebuildWorkflowBase implements RequestWorkflow {
         const rebuildResponse = engineService.Rebuild(fileBuffer, fileType.fileTypeName);
 
         this.Response.headers[Metric.RebuildTime] = timer.Elapsed();
-        this.Response.headers[Metric.ProtectedFileSize] = rebuildResponse.protectedFileLength;
+        if (rebuildResponse.protectedFileLength) {
+            this.Response.headers[Metric.ProtectedFileSize] = rebuildResponse.protectedFileLength;
+        }
+        else {
+            this.Response.headers[Metric.ProtectedFileSize] = 0;
+        }
 
         this.Logger.log("Output file length: '" + rebuildResponse.protectedFileLength + "'");
 
@@ -79,6 +80,39 @@ class RebuildWorkflowBase implements RequestWorkflow {
         headers[Metric.ProtectedFileSize] = Metric.DefaultValue;
         headers["Content-Type"] = "application/json";
         return headers;
+    }
+    
+    handleEngineFailure(rebuildResponse: RebuildResponse): void {
+        if (rebuildResponse.errorMessage && rebuildResponse.errorMessage.toLowerCase().includes("disallow")) {
+            this.Response.statusCode = 200;
+        }
+        else {
+            this.Response.statusCode = 422;
+        }
+
+        this.Response.rawBody = {
+            error: rebuildResponse.errorMessage,
+            engineOutcome: rebuildResponse.engineOutcome,
+            engineOutcomeName: rebuildResponse.engineOutcomeName,
+            engineError: rebuildResponse.errorMessage
+        };
+    }
+
+    handleUnsupportedFileType(): void {
+        this.Response.statusCode = 422;
+        this.Response.rawBody = {
+            error: "File Type could not be determined to be a supported type"
+        };
+    }
+    
+    handleError(err: Error|string): void {
+        this.Response.statusCode = 500;
+        if (isError(err)) {
+            this.Logger.log(err.message + err.stack);
+        }
+        else {
+            this.Logger.log(err);
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-import { RequestWorkflow, RequestWorkflowRequest } from "./requestWorkflow";
+import { RequestWorkflow, RequestWorkflowRequest, RequestWorkflowBase } from "./workflows/abstraction/requestWorkflow";
 import RebuildUrlRequestHandler from "./workflows/rebuildUrlWorkflow";
 import StatusCodeHandler from "./workflows/statusCodeWorkflow";
 import RebuildBase64Workflow from "./workflows/rebuildBase64Workflow";
@@ -8,38 +8,29 @@ class RequestWorkflowFactory {
     static GetRequestHandler(logger: { log: (message: string) => void }, request: RequestWorkflowRequest): RequestWorkflow {
         const resource = request.url.toLowerCase();
         const method = request.method.toLowerCase();
-        let workflow: RequestWorkflow;
 
         if (resource.includes("/api/v1/rebuild/url") && method == "post") {
-            workflow = new RebuildUrlRequestHandler(logger);
+            return new RebuildUrlRequestHandler(logger, request);
         }
-        else
+        
         if (resource.includes("/api/v1/rebuild/base64") && method == "post") {
-            workflow = new RebuildBase64Workflow(logger);
+            return new RebuildBase64Workflow(logger, request);
         }
-        else
+        
         if (resource.includes("/api/v1/rebuild/file") && method == "post") {
-            workflow = new RebuildFileWorkflow(logger);
+            return new RebuildFileWorkflow(logger, request);
         }
-        else
+        
         if (resource.includes("/api/v1/dummy") && method == "put") {
-            workflow = new StatusCodeHandler(logger, 200);
-            workflow.Response.headers["etag"] = "\"dummy\"";
-            workflow.Response.rawBody = {
-                Yes: true
-            };
+            return new StatusCodeHandler(logger, request, 200, { "etag": "\"dummy\"" });
         }
-        else
+        
         if (resource.includes("/api/v1/health") && method == "get") {
-            workflow = new StatusCodeHandler(logger, 200);
-        }
-        else {
-            workflow = new StatusCodeHandler(logger, 404);
-            logger.log("no route matched for " + resource + " method " + method);
+            return  new StatusCodeHandler(logger, request, 200);
         }
 
-        workflow.Request = request;
-        return workflow;
+        logger.log("no route matched for " + resource + " method " + method);
+        return new StatusCodeHandler(logger, request, 404);
     }
 }
 

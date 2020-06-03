@@ -5,29 +5,24 @@ export default class UrlRequest extends RequestModelBase {
     InputGetUrl: string;
     OutputPutUrl: string;
 
-    constructor(requestBody: any) {
+    constructor(payload: any) {
         super();
 
-        if (!requestBody) {
+        if (!payload) {
             this.setModelError("Body", "Not Supplied");
             return;
         }
 
-        let payload = requestBody;
-        if (typeof requestBody == "string") {
-            payload = JSON.parse(requestBody);
-        }
-
         if (!payload) {
-            this.setModelError("Body", "Not Supplied.");
+            this.setModelError("Body", "Not Supplied");
         }
         else {
-            if (!payload.InputGetUrl) {
-                this.setModelError("InputGetUrl", "Not Supplied.");
+            if (!(payload.InputGetUrl && payload.InputGetUrl.length)) {
+                this.setModelError("InputGetUrl", "Not Supplied");
             }
 
-            if (!payload.OutputPutUrl) {
-                this.setModelError("OutputPutUrl", "Not Supplied.");
+            if (!(payload.OutputPutUrl && payload.OutputPutUrl.length)) {
+                this.setModelError("OutputPutUrl", "Not Supplied");
             }
 
             if (Object.keys(this.Errors).length)
