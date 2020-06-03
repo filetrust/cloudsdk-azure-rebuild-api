@@ -20,14 +20,14 @@ jobs:
           submodules: true
           token: ${{ secrets.TOKEN_GITHUB }}
       - name: Build
-        working-directory: flavours/nodejs
+        working-directory: flavours/nodejs/functionapp
         run: |
           npm install
           npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
       - name: Unit tests
-        working-directory: flavours/nodejs
+        working-directory: flavours/nodejs/functionapp
         run: |
           npm run test
         env:
