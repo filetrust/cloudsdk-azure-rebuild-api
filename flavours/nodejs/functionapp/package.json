@@ -9,12 +9,7 @@
     "start": "func start",
     "test": "mocha -r ts-node/register ./**/*.tests.ts --watch --watch-files ./**/*.tests.ts",
     "test:coverage": "nyc mocha",
-    "copy:linux:dependencies1": "cpy ../../../libfreetype.so.6 ./",
-    "copy:linux:dependencies2": "cpy ../../../libfreetype.so.6 ./dist",
-    "copy:linux:dependencies3": "cpy ../../../libfreetype.so.6 ./dist/rebuild-v1/business/engine/",
-    "copy:linux:dependencies4": "cpy ../../../libfreetype.so.6 ./dist/lib/linux/SDK/",
-    "copy:linux": "cpy ../../../lib/linux/SDK/libglasswall.classic.so ./dist/lib/linux/SDK/",
-    "copy:windows": "cpy ../../../lib/windows/SDK/glasswall.classic.dll ./dist/lib/windows/SDK/"
+    "copy:windows": "cpx ../../../lib/windows/SDK/glasswall.classic.dll ./dist/lib/windows/SDK/"
   },
   "dependencies": {
     "@azure/functions": "^1.0.2-beta2",
@@ -29,7 +24,6 @@
     "busboy": "^0.3.1",
     "content-disposition": "^0.5.3",
     "cpx": "^1.5.0",
-    "cpy": "^8.1.0",
     "eslint": "^6.8.0",
     "eslint-config-react-app": "^5.0.2",
     "eslint-loader": "3.0.2",
