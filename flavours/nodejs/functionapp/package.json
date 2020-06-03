@@ -7,7 +7,7 @@
     "watch": "tsc -w",
     "prestart": "npm run build",
     "start": "func start",
-    "test": "mocha -r ts-node/register ./**/*.tests.ts",
+    "test": "mocha -r ts-node/register 'rebuild-v1/**/*.tests.ts'",
     "test:watch": "mocha -r ts-node/register ./**/*.tests.ts --watch --watch-files ./**/*.tests.ts",
     "test:coverage": "nyc mocha",
     "copy:windows": "cpx ../../../lib/windows/SDK/glasswall.classic.dll ./dist/lib/windows/SDK/ -u"
