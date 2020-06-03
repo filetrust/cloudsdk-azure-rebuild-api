@@ -7,7 +7,7 @@
     "watch": "tsc -w",
     "prestart": "npm run build",
     "start": "func start",
-    "test": "mocha -r ts-node/register ./**/*.test.ts --watch --watch-files ./**/*.test.ts",
+    "test": "mocha -r ts-node/register ./**/*.tests.ts --watch --watch-files ./**/*.tests.ts",
     "test:coverage": "nyc mocha",
     "copy:linux:dependencies1": "cpy ..\\..\\..\\libfreetype.so.6 .\\",
     "copy:linux:dependencies2": "cpy ..\\..\\..\\libfreetype.so.6 .\\dist",
