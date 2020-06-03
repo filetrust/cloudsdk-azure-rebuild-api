@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "tsc && npm run copy:linux && npm run copy:linux:dependencies1 && npm run copy:linux:dependencies2 && npm run copy:linux:dependencies3 && npm run copy:linux:dependencies4 && npm run copy:windows",
+    "build": "tsc && npm run copy:windows",
     "watch": "tsc -w",
     "prestart": "npm run build",
     "start": "func start",
