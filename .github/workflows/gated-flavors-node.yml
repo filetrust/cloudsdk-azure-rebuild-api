@@ -29,7 +29,7 @@ jobs:
       - name: Unit tests
         working-directory: flavours/nodejs/functionapp
         run: |
-          npm run test
+          npm run test:coverage
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
       - uses: actions/checkout@v1
