@@ -8,11 +8,15 @@ export type multipart = {
     mimetype?: string;
 };
 
+export var createBusBoy = (headers: { [header: string]: string }): busboy.Busboy => {
+    return new Busboy({ headers });
+}
+
 // eslint-disable-next-line no-var
 export var parseMultiPartForm = (fileBuffer: Buffer, headers: { [header: string]: string }): Promise<multipart[]> => {
     return new Promise((resolve, reject) => {
         const parts: multipart[] = [];
-        const busboy = new Busboy({ headers });
+        const busboy = createBusBoy(headers);
         busboy.on("file", (fieldName, file, fileName, encoding, mimetype) => {
             file.on("data", (data) => {
                 parts.push({

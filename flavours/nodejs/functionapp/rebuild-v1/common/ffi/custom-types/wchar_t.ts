@@ -28,9 +28,7 @@ wchar_t.get = (buffer: Buffer, offset: number): any => {
     return IconvLite.decode(stringBuf, encoding);
 };
 
-wchar_t.set = (buffer: Buffer, offset: number, value: any): void => {
-    let _buf = value;
-
+wchar_t.set = (buffer: Buffer, offset: number, value: string|Buffer): void => {
     let encoding: string;
 
     if (getProcessPlatform() == "win32") {
@@ -41,10 +39,11 @@ wchar_t.set = (buffer: Buffer, offset: number, value: any): void => {
     }
 
     if (typeof value == "string") {
-        _buf = IconvLite.encode(value + "\0", encoding);
+        ref.writePointer(buffer, offset, IconvLite.encode(value + "\0", encoding));
+    } else {
+        ref.writePointer(buffer, offset, value);
     }
 
-    ref.writePointer(buffer, offset, _buf);
 };
 
 export {

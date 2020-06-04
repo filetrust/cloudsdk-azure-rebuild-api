@@ -2,6 +2,7 @@
 /* Third party*/
 import "mocha";
 import { expect } from "chai";
+import { stub, SinonStub } from "sinon";
 
 /** Code in test */
 import { RequestWorkflowRequest } from "./abstraction/requestWorkflow";
@@ -17,18 +18,25 @@ import Metric from "../../common/metric";
 import FileType from "../../business/engine/enums/fileType";
 import ContentManagementFlags from "../../business/engine/contentManagementFlags";
 import rebuildUrlWorkflow from "./rebuildUrlWorkflow";
-import HttpFileOperations = require("../../common/http/httpFileOperations");
-import MockHttpFileOperations from "../../common/test/mocks/mockHttpFileOperations";
+import HttpFileOperations from "../../common/http/httpFileOperations";
 import MockLogger from "../../common/test/mocks/mockLogger";
 
-const fileInBuffer = Buffer.from("IN");
-const fileName = "test.pdf";
-
-const fileOutBuffer = Buffer.from("OUT");
-
 const mockLogger = new MockLogger();
+let downloadFileStub: SinonStub;
+let uploadFileStub: SinonStub;
 
 describe("rebuild url workflow", () => {
+
+    beforeEach(() => {
+        downloadFileStub = stub(HttpFileOperations, "downloadFile");
+        uploadFileStub = stub(HttpFileOperations, "uploadFile");
+    });
+
+    afterEach(() => {
+        downloadFileStub.restore();
+        uploadFileStub.restore();
+    });
+
     const requestMock: RequestWorkflowRequest = {
         method: "POST",
         url: "example.com"
@@ -63,6 +71,8 @@ describe("rebuild url workflow", () => {
         let requestMock: RequestWorkflowRequest;
         let mockEngine: MockEngine;
         let mockTimer: Timer;
+        const fileInBuffer = Buffer.from("IN");
+        const fileOutBuffer = Buffer.from("OUT");
 
         const commonSetup = (): void => {
             mockEngine = new MockEngine();
@@ -85,9 +95,8 @@ describe("rebuild url workflow", () => {
                 return mockTimer;
             };
 
-
-            HttpFileOperations.default = MockHttpFileOperations;
-            MockHttpFileOperations.etag = "\"Test\"";
+            uploadFileStub.returns("\"Test\"");
+            downloadFileStub.returns(fileInBuffer);
             workflow = new rebuildUrlWorkflow(mockLogger, requestMock);
         };
 
@@ -119,11 +128,9 @@ describe("rebuild url workflow", () => {
             beforeEach(async () => {
                 commonSetup();
 
-                MockHttpFileOperations.downloadFileBuffer = fileInBuffer;
+                downloadFileStub.returns(fileInBuffer);
 
-                workflow.Request.body = {
-                };
-
+                workflow.Request.body = { };
                 workflow.Request.body.InputGetUrl = "test";
                 workflow.Request.body.OutputPutUrl = "test";
                 workflow.Request.body[key] = value;
@@ -224,7 +231,7 @@ describe("rebuild url workflow", () => {
             it("should have set ProtectedFileSize header",  () => expectHeaderToEqual(Metric.ProtectedFileSize, fileOutBuffer.length));
             it("should have set UploadSize header",         () => expectHeaderToEqual(Metric.UploadSize, fileOutBuffer.length));
             it("should have set UploadTime header",         () => expectHeaderToEqual(Metric.UploadTime, mockTimer.Elapsed()));
-            it("should have set UploadEtag header",         () => expectHeaderToEqual(Metric.UploadEtag, MockHttpFileOperations.etag));
+            it("should have set UploadEtag header",         () => expectHeaderToEqual(Metric.UploadEtag, "\"Test\""));
             it("should have set FileType header",           () => expectHeaderToEqual(Metric.FileType, mockEngine.FileType.fileTypeName));
             it("should have set EngineLoadTime header",     () => expectHeaderToEqual(Metric.EngineLoadTime, mockTimer.Elapsed()));
             it("should have set Content-Type header",       () => expectHeaderToEqual("Content-Type", "application/json"));

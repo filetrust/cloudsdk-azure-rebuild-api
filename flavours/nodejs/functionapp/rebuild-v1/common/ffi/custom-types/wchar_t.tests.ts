@@ -4,21 +4,25 @@ import "mocha";
 import { expect } from "chai";
 import fetchMock = require("fetch-mock");
 import ref = require("ref-napi");
-import ffi = require("ffi-napi");
-import { stub, createStubInstance, spy, SinonStub } from "sinon";
+import { stub, SinonStub } from "sinon";
 import { wchar_t } from "./wchar_t";
 import IconvLite = require("iconv-lite");
 import platform = require("../../platform");
-
 
 describe("wchar_t", () => {
     const platformSpecificTests = (platformTestCase: string, wchar_size: number, encoding: string) => {
         let readPointerStub: SinonStub;
         let readPointerResult: Buffer;
+
+        let writePointerStub: SinonStub;
+        let writePointerResult: Buffer;
     
         let reinterpretUntilZerosStub: SinonStub;
         let reinterpretUntilZerosStubResult: Buffer;
     
+        let encodeStub: SinonStub;
+        let encodeStubResult: Buffer;
+
         let decodeStub: SinonStub;
         let decodeStubResult: string;
     
@@ -34,7 +38,9 @@ describe("wchar_t", () => {
             isNullStubResult = true;
     
             readPointerStub = stub(ref, "readPointer");
+            writePointerStub = stub(ref, "writePointer");
             reinterpretUntilZerosStub = stub(ref, "reinterpretUntilZeros");
+            encodeStub = stub(IconvLite, "encode");
             decodeStub = stub(IconvLite, "decode");
             isNullStub = stub(ref, "isNull");
             getProcessPlatformStub = stub(platform, "getProcessPlatform");
@@ -43,9 +49,11 @@ describe("wchar_t", () => {
         afterEach(() => {
             readPointerStub.restore();
             reinterpretUntilZerosStub.restore();
+            encodeStub.restore();
             decodeStub.restore();
             isNullStub.restore();
             getProcessPlatformStub.restore();
+            writePointerStub.restore();
         });
 
         describe("get", () => {
@@ -136,7 +144,67 @@ describe("wchar_t", () => {
             });
         });
         describe("set", () => {
+            let inputBuffer;
+            let inputOffset;
+            let inputValue;
 
+            beforeEach(() => {
+                inputBuffer = Buffer.from("get");
+                inputOffset = 5;
+                isNullStubResult = true;
+
+                readPointerStub.returns(readPointerResult);
+                writePointerStub.returns(writePointerResult);
+                reinterpretUntilZerosStub.returns(reinterpretUntilZerosStubResult);
+                decodeStub.returns(decodeStubResult);
+                isNullStub.returns(isNullStubResult);
+                getProcessPlatformStub.returns(platformTestCase);
+            });
+
+            describe("when value is a string", () => {
+                let value: string;
+
+                beforeEach(() => {
+                    inputValue = "SOME VALUE";
+                    wchar_t.set(inputBuffer, inputOffset, inputValue);
+                });
+
+                it("should call encode", () => {
+                    expect(encodeStub.getCalls()).lengthOf(1);
+                    expect(encodeStub.getCall(0).args).lengthOf(2);
+                    expect(encodeStub.getCall(0).args[0]).to.equal(inputValue + "\0");
+                    expect(encodeStub.getCall(0).args[1]).to.equal(encoding);
+                });
+
+                it("should call write pointer", () => {
+                    expect(writePointerStub.getCalls()).lengthOf(1);
+                    expect(writePointerStub.getCall(0).args).lengthOf(3);
+                    expect(writePointerStub.getCall(0).args[0]).to.equal(inputBuffer);
+                    expect(writePointerStub.getCall(0).args[1]).to.equal(inputOffset);
+                    expect(writePointerStub.getCall(0).args[2]).to.equal(encodeStubResult);
+                });
+            });
+            
+            describe("when value is a buffer", () => {
+                let value: Buffer;
+
+                beforeEach(() => {
+                    inputValue = Buffer.from("SOME VALUE");
+                    wchar_t.set(inputBuffer, inputOffset, inputValue);
+                });
+
+                it("should not call encode", () => {
+                    expect(encodeStub.getCalls()).lengthOf(0);
+                });
+
+                it("should call write pointer", () => {
+                    expect(writePointerStub.getCalls()).lengthOf(1);
+                    expect(writePointerStub.getCall(0).args).lengthOf(3);
+                    expect(writePointerStub.getCall(0).args[0]).to.equal(inputBuffer);
+                    expect(writePointerStub.getCall(0).args[1]).to.equal(inputOffset);
+                    expect(writePointerStub.getCall(0).args[2]).to.equal(inputValue);
+                });
+            });
         });
     };
 
