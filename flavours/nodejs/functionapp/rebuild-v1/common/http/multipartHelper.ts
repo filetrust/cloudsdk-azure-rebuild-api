@@ -8,9 +8,9 @@ export type multipart = {
     mimetype?: string;
 };
 
-export var createBusBoy = (headers: { [header: string]: string }): busboy.Busboy => {
+export const createBusBoy = (headers: { [header: string]: string }): busboy.Busboy => {
     return new Busboy({ headers });
-}
+};
 
 // eslint-disable-next-line no-var
 export var parseMultiPartForm = (fileBuffer: Buffer, headers: { [header: string]: string }): Promise<multipart[]> => {
@@ -40,7 +40,7 @@ export var parseMultiPartForm = (fileBuffer: Buffer, headers: { [header: string]
             }
         });
 
-        if (success) {
+        if (!success) {
             reject("Could not parse form.");
         }
 

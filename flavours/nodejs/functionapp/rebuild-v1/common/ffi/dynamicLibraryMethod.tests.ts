@@ -2,21 +2,19 @@
 /* Third party*/
 import "mocha";
 import { expect } from "chai";
-import fetchMock = require("fetch-mock");
-import ref = require("ref-napi");
 import ffi = require("ffi-napi");
 import DynamicLibraryMethod from "./dynamicLibraryMethod";
-import { stub, createStubInstance } from "sinon";
+import { stub, createStubInstance, SinonStub, SinonStubbedInstance } from "sinon";
 
 describe("DynamicLibraryMethod", () => {
-    let mockLib;
-    let mockFunction;
+    let mockLib: SinonStubbedInstance<ffi.DynamicLibrary>;
+    let mockFunction: SinonStub;
 
-    let entryPointPtr;
-    let entryPoint;
+    let entryPointPtr: Buffer;
+    let entryPoint: any;
 
     beforeEach(() => {
-        entryPoint = (...args) => args;
+        entryPoint = (...args: any[]): any => args;
         entryPointPtr = Buffer.from("banana");
 
         mockFunction = stub(ffi, "ForeignFunction").returns(entryPoint);

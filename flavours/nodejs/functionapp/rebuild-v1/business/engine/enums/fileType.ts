@@ -1,5 +1,5 @@
 enum FileType {
-    Unknown =0,
+    Unknown = 0,
     FileIssues = 1,
     BufferIssues = 2,
     InternalIssues = 3,

@@ -5,6 +5,7 @@ import { DynamicLibrary } from "ffi-napi";
 import EngineOutcome from "./enums/engineOutcome";
 import { wchar_t } from "../../common/ffi/custom-types/wchar_t";
 import MethodWrapper from "../../common/ffi/dynamicLibraryMethod";
+import { ArgumentNullException, ArgumentException } from "../../common/errors/errors";
 
 const pFile_t = refType(types.void);
 const pFileLength_t = refType(types.size_t);
@@ -19,41 +20,24 @@ class LibGlasswallClassic {
     _GWMemoryToMemoryProtect: MethodWrapper;
 
     constructor(libPath: string) {
-        console.log("loading " + libPath);
         if (!existsSync(libPath)) {
             throw "Cannot find DLL at " + libPath;
         }
-
-        console.log("found " + libPath);
-        try {
-            console.log("ffi.dynamiclibrary loading");
-            this._GlasswallEngine = new DynamicLibrary(libPath);            
-            console.log("ffi.dynamiclibrary loaded ");
-            this._GWFileErrorMsg = new MethodWrapper(this._GlasswallEngine, "GWFileErrorMsg", wchar_t, []);
-            console.log("_GWFileErrorMsg loaded ");
-            this._GWFileDone = new MethodWrapper(this._GlasswallEngine, "GWFileDone", "int", []);
-            console.log("_GWFileDone loaded ");
-            this._GWFileVersion = new MethodWrapper(this._GlasswallEngine, "GWFileVersion", wchar_t, []);
-            console.log("_GWFileVersion loaded ");
-            this._GWDetermineFileTypeFromFileInMem = new MethodWrapper(this._GlasswallEngine, "GWDetermineFileTypeFromFileInMem", "int", ["pointer", "size_t"]);
-            console.log("_GWDetermineFileTypeFromFileInMem loaded ");
-            this._GWFileConfigXML = new MethodWrapper(this._GlasswallEngine, "GWFileConfigXML", "int", [wchar_t]);
-            console.log("_GWFileConfigXML loaded ");
-
-            this._GWMemoryToMemoryProtect = new MethodWrapper(this._GlasswallEngine, "GWMemoryToMemoryProtect", "int",
-                [
-                    "pointer",
-                    "size_t",
-                    wchar_t,
-                    pFile_t,
-                    pFileLength_t
-                ]);
-                
-            console.log("engine loaded from: " + libPath);
-        }
-        catch (err) {
-            console.log(err);
-        }
+        
+        this._GlasswallEngine = new DynamicLibrary(libPath);
+        this._GWFileErrorMsg = new MethodWrapper(this._GlasswallEngine, "GWFileErrorMsg", wchar_t, []);
+        this._GWFileDone = new MethodWrapper(this._GlasswallEngine, "GWFileDone", "int", []);
+        this._GWFileVersion = new MethodWrapper(this._GlasswallEngine, "GWFileVersion", wchar_t, []);
+        this._GWDetermineFileTypeFromFileInMem = new MethodWrapper(this._GlasswallEngine, "GWDetermineFileTypeFromFileInMem", "int", ["pointer", "size_t"]);
+        this._GWFileConfigXML = new MethodWrapper(this._GlasswallEngine, "GWFileConfigXML", "int", [wchar_t]);
+        this._GWMemoryToMemoryProtect = new MethodWrapper(this._GlasswallEngine, "GWMemoryToMemoryProtect", "int",
+            [
+                "pointer",
+                "size_t",
+                wchar_t,
+                pFile_t,
+                pFileLength_t
+            ]);
     }
 
     GWFileVersion(): string {
@@ -62,7 +46,7 @@ class LibGlasswallClassic {
 
     GWDetermineFileTypeFromFileInMem(buffer: Buffer): number {
         if (!buffer) {
-            throw "Buffer was not defined";
+            throw new ArgumentNullException("buffer");
         }
 
         try {
@@ -74,6 +58,14 @@ class LibGlasswallClassic {
     }
 
     GWFileConfigXML(xmlConfig: string): number {
+        if (!xmlConfig) {
+            throw new ArgumentNullException("buffer");
+        }
+        
+        if (!xmlConfig.length) {
+            throw new ArgumentException("buffer", "Config must not be empty.");
+        }
+
         try {
             return this._GWFileConfigXML.Execute(xmlConfig);
         }
@@ -136,6 +128,8 @@ class LibGlasswallClassic {
         this._GWMemoryToMemoryProtect = null;
         this._GlasswallEngine.close();
         this._GlasswallEngine = null;
+        this._GWFileErrorMsg.Dispose();
+        this._GWFileErrorMsg = null;
     }
 }
 
