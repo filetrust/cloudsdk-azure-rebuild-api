@@ -10,21 +10,18 @@ import RebuildBase64Workflow from "./rebuildBase64Workflow";
 /** Mock dependencies */
 import EngineService from "../../business/services/engineService";
 import EngineServiceFactory from "../../business/services/engineServiceFactory";
-import MockEngine from "./mocks/mockEngine";
+import MockEngine from "../../common/test/mocks/mockEngine";
 import Timer from "../../common/timer";
 import { ArgumentNullException, ArgumentException } from "../../common/errors/errors";
 import EngineOutcome from "../../business/engine/enums/engineOutcome";
 import Metric from "../../common/metric";
 import FileType from "../../business/engine/enums/fileType";
 import ContentManagementFlags from "../../business/engine/contentManagementFlags";
+import MockLogger from "../../common/test/mocks/mockLogger";
+
+const mockLogger = new MockLogger();
 
 describe("base64workflow", () => {
-    let loggedMessages: string[];
-
-    const logMock = (message: string): void => {
-        loggedMessages.push(message);
-    };
-
     const requestMock: RequestWorkflowRequest = {
         method: "POST",
         url: "example.com"
@@ -32,9 +29,9 @@ describe("base64workflow", () => {
 
     describe("constructor", () => {
         it("should construct with valid arguments", () => {
-            const workflow = new RebuildBase64Workflow({ log: logMock }, requestMock);
+            const workflow = new RebuildBase64Workflow(mockLogger, requestMock);
 
-            expect(workflow.Logger.log).to.equal(logMock);
+            expect(workflow.Logger).to.equal(mockLogger);
             expect(workflow.Response.statusCode).to.equal(200);
             expect(workflow.Request).to.equal(requestMock);
         });
@@ -50,8 +47,8 @@ describe("base64workflow", () => {
 
         it("should throw with null logger", () => constructorTest(null, requestMock, "logger"));
         it("should throw with undefined logger", () => constructorTest(undefined, requestMock, "logger"));
-        it("should throw with undefined request", () => constructorTest({ log: logMock }, null, "request"));
-        it("should throw with undefined request", () => constructorTest({ log: logMock }, undefined, "request"));
+        it("should throw with undefined request", () => constructorTest(mockLogger, null, "request"));
+        it("should throw with undefined request", () => constructorTest(mockLogger, undefined, "request"));
     });
 
     describe("handle method", () => {
@@ -62,8 +59,6 @@ describe("base64workflow", () => {
 
         const commonSetup = (): void => {
             mockEngine = new MockEngine();
-
-            loggedMessages = [];
 
             requestMock = {
                 method: "POST",
@@ -81,7 +76,8 @@ describe("base64workflow", () => {
                 return mockTimer;
             };
 
-            workflow = new RebuildBase64Workflow({ log: logMock }, requestMock);
+            mockLogger.loggedMessages = [];
+            workflow = new RebuildBase64Workflow(mockLogger, requestMock);
         };
 
         const expectHeaderToEqual = (expectedHeader: string, expectedHeaderValue: any): void => {
@@ -500,8 +496,8 @@ describe("base64workflow", () => {
             });
 
             it("should log error", () => {
-                expect(loggedMessages.length).to.equal(1);
-                expect(loggedMessages[0]).to.equal("error");
+                expect(mockLogger.loggedMessages.length).to.equal(1);
+                expect(mockLogger.loggedMessages[0]).to.equal("error");
             });
 
             it("should set status code to 500", () => {

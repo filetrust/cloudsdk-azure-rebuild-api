@@ -9,10 +9,6 @@ class RebuildWorkflowBase extends RequestWorkflowBase {
     constructor(logger: { log: (message: string) => void }, request: RequestWorkflowRequest) {
         super(logger, request);
         
-        if (new.target === RebuildWorkflowBase) {
-            throw new TypeError("Cannot construct Abstract instances directly");
-        }
-
         this.Response.statusCode = 200;
         this.Response.headers = RebuildWorkflowBase.GetDefaultHeaders();
     }

@@ -12,11 +12,6 @@ export default class Base64Request extends RequestModelBase {
             return;
         }
 
-        if (!payload) {
-            this.setModelError("Body", "Not Supplied");
-            return;
-        }
-
         if (!payload.Base64) {
             this.setModelError("Base64", "Not Supplied");
         }

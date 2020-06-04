@@ -9,7 +9,7 @@ import { RequestWorkflowRequest } from "./abstraction/requestWorkflow";
 /** Mock dependencies */
 import EngineService from "../../business/services/engineService";
 import EngineServiceFactory from "../../business/services/engineServiceFactory";
-import MockEngine from "./mocks/mockEngine";
+import MockEngine from "../../common/test/mocks/mockEngine";
 import Timer from "../../common/timer";
 import { ArgumentException } from "../../common/errors/errors";
 import EngineOutcome from "../../business/engine/enums/engineOutcome";
@@ -17,23 +17,18 @@ import Metric from "../../common/metric";
 import FileType from "../../business/engine/enums/fileType";
 import ContentManagementFlags from "../../business/engine/contentManagementFlags";
 import rebuildUrlWorkflow from "./rebuildUrlWorkflow";
-import contentDisposition = require("content-disposition");
 import HttpFileOperations = require("../../common/http/httpFileOperations");
-import MockHttpFileOperations from "./mocks/mockHttpFileOperations";
+import MockHttpFileOperations from "../../common/test/mocks/mockHttpFileOperations";
+import MockLogger from "../../common/test/mocks/mockLogger";
 
 const fileInBuffer = Buffer.from("IN");
 const fileName = "test.pdf";
 
 const fileOutBuffer = Buffer.from("OUT");
 
+const mockLogger = new MockLogger();
+
 describe("rebuild url workflow", () => {
-    let loggedMessages: string[];
-
-    const logMock = (message: string): void => {
-        console.log(message);
-        loggedMessages.push(message);
-    };
-
     const requestMock: RequestWorkflowRequest = {
         method: "POST",
         url: "example.com"
@@ -41,9 +36,9 @@ describe("rebuild url workflow", () => {
 
     describe("constructor", () => {
         it("should construct with valid arguments", () => {
-            const workflow = new rebuildUrlWorkflow({ log: logMock }, requestMock);
+            const workflow = new rebuildUrlWorkflow(mockLogger, requestMock);
 
-            expect(workflow.Logger.log).to.equal(logMock);
+            expect(workflow.Logger).to.equal(mockLogger);
             expect(workflow.Response.statusCode).to.equal(200);
             expect(workflow.Request).to.equal(requestMock);
         });
@@ -59,8 +54,8 @@ describe("rebuild url workflow", () => {
 
         it("should throw with null logger", () => constructorTest(null, requestMock, "logger"));
         it("should throw with undefined logger", () => constructorTest(undefined, requestMock, "logger"));
-        it("should throw with undefined request", () => constructorTest({ log: logMock }, null, "request"));
-        it("should throw with undefined request", () => constructorTest({ log: logMock }, undefined, "request"));
+        it("should throw with undefined request", () => constructorTest(mockLogger, null, "request"));
+        it("should throw with undefined request", () => constructorTest(mockLogger, undefined, "request"));
     });
 
     describe("handle method", () => {
@@ -72,7 +67,7 @@ describe("rebuild url workflow", () => {
         const commonSetup = (): void => {
             mockEngine = new MockEngine();
 
-            loggedMessages = [];
+            mockLogger.loggedMessages = [];
 
             requestMock = {
                 method: "POST",
@@ -93,13 +88,13 @@ describe("rebuild url workflow", () => {
 
             HttpFileOperations.default = MockHttpFileOperations;
             MockHttpFileOperations.etag = "\"Test\"";
-            workflow = new rebuildUrlWorkflow({ log: logMock }, requestMock);
+            workflow = new rebuildUrlWorkflow(mockLogger, requestMock);
         };
 
         const expectHeaderToEqual = (expectedHeader: string, expected: any): void => {
             const actual = workflow.Response.headers[expectedHeader];
             expect(Object.keys(workflow.Response.headers)).to.contain(expectedHeader);
-            expect(actual, `Expected header '${expectedHeader}' to equal '${expected}' but it was '${actual}'. Response: ${JSON.stringify(workflow.Response)}. Messages Logged: ${JSON.stringify(loggedMessages)}`).to.equal(expected);
+            expect(actual, `Expected header '${expectedHeader}' to equal '${expected}' but it was '${actual}'. Response: ${JSON.stringify(workflow.Response)}. Messages Logged: ${JSON.stringify(mockLogger.loggedMessages)}`).to.equal(expected);
         };
 
         describe("when request body is not set", () => {
@@ -490,8 +485,8 @@ describe("rebuild url workflow", () => {
             });
 
             it("should log error", () => {
-                expect(loggedMessages.length).to.equal(1);
-                expect(loggedMessages[0]).to.equal("error");
+                expect(mockLogger.loggedMessages.length).to.equal(1);
+                expect(mockLogger.loggedMessages[0]).to.equal("error");
             });
 
             it("should set status code to 500", () => {
