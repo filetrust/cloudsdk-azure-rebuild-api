@@ -128,6 +128,50 @@ describe("libGlasswallClassic", () => {
         });
     });
 
+    describe("GWFileConfigXML", () => {
+        const expected = 23;
+        let actual: number;
+        let inputBuffer: Buffer;
+
+        describe("when string is not quite right", () => {
+            beforeEach(() => {
+                existsStub.returns(true);
+                engine = new LibGlasswallClassic(inputPath);
+            });
+
+            it("should throw when buffer is null", () => {
+                expect(() => {
+                    engine.GWDetermineFileTypeFromFileInMem(null);
+                }).to.throw(ArgumentNullException).with.property("argumentName").to.equal("buffer");
+            });
+        });
+
+        describe("when buffer is correct", () => {
+            beforeEach(() => {
+                existsStub.returns(true);
+
+                engine = new LibGlasswallClassic(inputPath);
+
+                methodWrapper.Execute.returns(expected);
+                inputBuffer = Buffer.from("SUCCESS");
+
+                actual = engine.GWDetermineFileTypeFromFileInMem(inputBuffer);
+            });
+
+            it("should execute method", () => {
+                const calls = methodWrapper.Execute.getCalls();
+                expect(calls).lengthOf(1);
+                expect(calls[0].args).lengthOf(2);
+                expect(calls[0].args[0]).to.equal(inputBuffer);
+                expect(calls[0].args[1]).to.equal(inputBuffer.length);
+            });
+
+            it("should return result", () => {
+                expect(actual).to.equal(expected);
+            });
+        });
+    });
+
     // describe("GWFileVersion", () => {
     //     beforeEach(() => {
     //         existsStub.returns(true);
