@@ -44,3 +44,5 @@ __pycache__/
 
 .vscode
 libfreetype.so.6
+
+.nyc_output
