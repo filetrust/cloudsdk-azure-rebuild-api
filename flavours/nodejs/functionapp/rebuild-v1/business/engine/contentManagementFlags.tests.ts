@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "mocha";
 import { expect } from "chai";
-import ContentManagementFlags, { EngineConfig } from "./ContentManagementFlags";
+import ContentManagementFlags, { EngineConfig } from "./contentManagementFlags";
 import Sinon = require("sinon");
 
-describe("ContentManagementFlags", () => {
+describe("contentManagementFlags", () => {
     describe("constructor", () => {
         it("should set all flags to sanitise", () => {
             const classInTest = new ContentManagementFlags();
@@ -48,6 +48,18 @@ describe("ContentManagementFlags", () => {
         let result: string;
         let calledXmlSerialiser: true;
         let configThatGetsSerialised: EngineConfig;
+
+        describe("can run with o2x", () => {
+            beforeEach(() => {
+                classInTest = new ContentManagementFlags();
+
+                result = classInTest.Adapt();
+            });
+
+            it("should call o2x", () => {
+                expect(result.startsWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>")).to.be.true;
+            });
+        });
 
         describe("with default flags", () => {
             beforeEach(() => {
@@ -235,6 +247,67 @@ describe("ContentManagementFlags", () => {
                 classInTest.PowerPointContentManagement.Metadata = undefined;
                 classInTest.WordContentManagement.Metadata = undefined;
                 classInTest.PdfContentManagement.Metadata = undefined;
+
+                result = classInTest.Adapt((engineConfig: EngineConfig): string => {
+                    configThatGetsSerialised = engineConfig;
+                    calledXmlSerialiser = true;
+                    return "xml contents";
+                });
+            });
+
+            it("should call o2x", () => {
+                expect(calledXmlSerialiser).to.be.true;
+            });
+
+            it("should return correct xml", () => {
+                expect(result).to.equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>xml contents");
+            });
+
+            it("should serialise correct flags", () => {
+                expect(configThatGetsSerialised).to.not.be.undefined;
+                expect(configThatGetsSerialised.config.pdfConfig.metadata).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pdfConfig.internal_hyperlinks).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pdfConfig.external_hyperlinks).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pdfConfig.embedded_files).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pdfConfig.embedded_images).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pdfConfig.javascript).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pdfConfig.acroform).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pdfConfig.actions_all).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pdfConfig.watermark).to.equal("");
+                expect(configThatGetsSerialised.config.xlsConfig.metadata).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.xlsConfig.internal_hyperlinks).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.xlsConfig.external_hyperlinks).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.xlsConfig.embedded_files).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.xlsConfig.embedded_images).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.xlsConfig.dynamic_data_exchange).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.xlsConfig.macros).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.xlsConfig.review_comments).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pptConfig.metadata).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pptConfig.internal_hyperlinks).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pptConfig.external_hyperlinks).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pptConfig.embedded_files).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pptConfig.embedded_images).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pptConfig.macros).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.pptConfig.review_comments).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.wordConfig.metadata).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.wordConfig.internal_hyperlinks).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.wordConfig.external_hyperlinks).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.wordConfig.embedded_files).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.wordConfig.embedded_images).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.wordConfig.dynamic_data_exchange).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.wordConfig.macros).to.equal("sanitise");
+                expect(configThatGetsSerialised.config.wordConfig.review_comments).to.equal("sanitise");
+            });
+        });
+
+        describe("with some set to null", () => {
+            beforeEach(() => {
+                classInTest = new ContentManagementFlags();
+
+                classInTest.ExcelContentManagement.Metadata = null;
+                classInTest.PowerPointContentManagement.Metadata = null;
+                classInTest.WordContentManagement.Metadata = null;
+                classInTest.PdfContentManagement.Metadata = null;
 
                 result = classInTest.Adapt((engineConfig: EngineConfig): string => {
                     configThatGetsSerialised = engineConfig;

@@ -61,10 +61,6 @@ class LibGlasswallClassic {
         if (!xmlConfig) {
             throw new ArgumentNullException("xmlConfig");
         }
-        
-        if (!xmlConfig.length) {
-            throw new ArgumentException("xmlConfig", "Config must not be empty.");
-        }
 
         try {
             return this._GWFileConfigXML.Execute(xmlConfig);
@@ -85,10 +81,6 @@ class LibGlasswallClassic {
 
         if (!fileType) {
             throw new ArgumentNullException("fileType");
-        }
-
-        if (!fileType.length) {
-            throw new ArgumentException("fileType", "fileType must not be empty.");
         }
 
         let engineOutcome: number;

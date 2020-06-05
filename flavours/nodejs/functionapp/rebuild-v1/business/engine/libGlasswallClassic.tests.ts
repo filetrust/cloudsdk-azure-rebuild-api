@@ -121,6 +121,31 @@ describe("libGlasswallClassic", () => {
         });
     });
 
+    describe("GWFileDone", () => {
+        const expected = 0;
+        let actual: number;
+
+        beforeEach(() => {
+            existsStub.returns(true);
+
+            engine = new LibGlasswallClassic(inputPath);
+
+            methodWrapper.Execute.returns(expected);
+
+            actual = engine.GWFileDone();
+        });
+
+        it("should execute method", () => {
+            const calls = methodWrapper.Execute.getCalls();
+            expect(calls).lengthOf(1);
+            expect(calls[0].args).lengthOf(0);
+        });
+
+        it("should return result", () => {
+            expect(actual).to.equal(expected);
+        });
+    });
+
     describe("GWDetermineFileTypeFromFileInMem", () => {
         const expected = 23;
         let actual: number;
@@ -182,13 +207,19 @@ describe("libGlasswallClassic", () => {
                 }).to.throw(ArgumentNullException).with.property("argumentName").to.equal("xmlConfig");
             });
 
+            it("should throw when string is undefined", () => {
+                expect(() => {
+                    engine.GWFileConfigXML(undefined);
+                }).to.throw(ArgumentNullException).with.property("argumentName").to.equal("xmlConfig");
+            });
+
             it("should throw when string is empty", () => {
                 const expected = expect(() => {
                     engine.GWFileConfigXML("");
                 });
                 
                 expected.to.throw(ArgumentException).with.property("argumentName").to.equal("xmlConfig");
-                expected.to.throw(ArgumentNullException).with.property("message").to.equal("Argument is invalid: 'xmlConfig' message: 'Argument must be defined: 'xmlConfig''");
+                expected.to.throw(ArgumentException).with.property("message").to.equal("Argument is invalid: 'xmlConfig' message: 'Argument must be defined: 'xmlConfig''");
             });
         });
 
@@ -288,6 +319,36 @@ describe("libGlasswallClassic", () => {
             it("should return result", () => {
                 expect(result.engineOutcome).to.equal(EngineOutcome.Success);
                 expect(result.protectedFile).to.equal(outputBuffer);
+            });
+        });
+        
+        describe("when engine cannot be rebuilt", () => {
+            beforeEach(() => {
+                existsStub.returns(true);
+
+                engine = new LibGlasswallClassic(inputPath);
+
+                methodWrapper.Execute.returns(EngineOutcome.Error);
+                inputBuffer = Buffer.from("SUCCESS");
+                inputFileType = "png";
+
+                result = engine.GWMemoryToMemoryProtect(inputBuffer, inputFileType);
+            });
+
+            it("should execute method", () => {
+                const calls = methodWrapper.Execute.getCalls();
+                expect(calls).lengthOf(1);
+                expect(calls[0].args).lengthOf(5);
+                expect(calls[0].args[0]).to.equal(inputBuffer);
+                expect(calls[0].args[1]).to.equal(inputBuffer.length);
+                expect(calls[0].args[2]).to.equal(inputFileType);
+                expect(Ref.alloc(Ref.refType(Ref.types.void)).equals(calls[0].args[3])).to.be.true;
+                expect(Ref.alloc(Ref.refType(Ref.types.size_t)).equals(calls[0].args[4])).to.be.true;
+            });
+
+            it("should return result", () => {
+                expect(result.engineOutcome).to.equal(EngineOutcome.Error);
+                expect(result.protectedFile).to.be.undefined;
             });
         });
     });
