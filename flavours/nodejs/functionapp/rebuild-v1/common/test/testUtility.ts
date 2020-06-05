@@ -1,13 +1,9 @@
 import { expect } from "chai";
 import { fail } from "assert";
 
-const create = <T>(type: { new(): T }) => {
-    return new type();
-}
-
 export const expectToThrow = <TError extends Error>(func: () => void, callback: (err: TError) => void): void => {
     try {
-        func()
+        func();
 
         fail("Method did not throw");
     }
@@ -15,4 +11,4 @@ export const expectToThrow = <TError extends Error>(func: () => void, callback: 
         expect(err).to.be.instanceOf(Error);
         callback(err);
     }
-}
+};

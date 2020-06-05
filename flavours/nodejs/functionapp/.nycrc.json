@@ -2,7 +2,10 @@
   "extends": "@istanbuljs/nyc-config-typescript",
   "all": true,
   "check-coverage": true,
-  
+  "exclude": [
+    "**/*.tests.ts",
+    "**/common/test"
+  ],
   "branches": 70,
   "lines": 70,
   "functions": 70,

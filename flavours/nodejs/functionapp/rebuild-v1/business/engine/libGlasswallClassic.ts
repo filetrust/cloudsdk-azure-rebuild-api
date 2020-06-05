@@ -59,11 +59,11 @@ class LibGlasswallClassic {
 
     GWFileConfigXML(xmlConfig: string): number {
         if (!xmlConfig) {
-            throw new ArgumentNullException("buffer");
+            throw new ArgumentNullException("xmlConfig");
         }
         
         if (!xmlConfig.length) {
-            throw new ArgumentException("buffer", "Config must not be empty.");
+            throw new ArgumentException("xmlConfig", "Config must not be empty.");
         }
 
         try {
@@ -76,7 +76,19 @@ class LibGlasswallClassic {
 
     GWMemoryToMemoryProtect(buffer: Buffer, fileType: string): { engineOutcome: number; protectedFile?: Buffer } {
         if (!buffer) {
-            throw "Buffer was not defined";
+            throw new ArgumentNullException("buffer");
+        }
+
+        if (!buffer.length) {
+            throw new ArgumentException("buffer", "buffer must not be empty.");
+        }
+
+        if (!fileType) {
+            throw new ArgumentNullException("fileType");
+        }
+
+        if (!fileType.length) {
+            throw new ArgumentException("fileType", "fileType must not be empty.");
         }
 
         let engineOutcome: number;

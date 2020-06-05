@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import EngineService, { FileTypeResponse, EngineStatusResponse, RebuildResponse } from "../../../business/services/engineService";
