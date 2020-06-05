@@ -7,9 +7,12 @@ import mockContext = require("azure-function-context-mock");
 /** Code in test */
 import httpTrigger from "./index";
 import RequestHandlerFactory from "./service/requestWorkflowFactory";
-import { RequestWorkflow } from "./service/workflows/abstraction/requestWorkflow";
+import { RequestWorkflow, RequestWorkflowBase } from "./service/workflows/abstraction/requestWorkflow";
+import Sinon = require("sinon");
 
 const getHandle = RequestHandlerFactory.GetRequestHandler;
+const gcOrig = global.gc;
+
 
 describe("httpTrigger", () => {
     let loggedMessages: string[];
@@ -87,9 +90,10 @@ describe("httpTrigger", () => {
 
         it("logs correct messages", () => {
             expect(loggedMessages).to.not.be.empty; 
-            expect(loggedMessages.length).to.be.equal(2);
+            expect(loggedMessages.length).to.be.equal(3);
             expect(loggedMessages[0]).to.be.equal("Rebuild API HTTP trigger processed a request.");
             expect(loggedMessages[1]).to.be.equal("banana");
+            expect(loggedMessages[2]).to.be.equal("Could not run GC.");
         });
     });
 
@@ -171,13 +175,107 @@ describe("httpTrigger", () => {
 
         it("logs correct messages", () => {
             expect(loggedMessages).to.not.be.empty; 
-            expect(loggedMessages.length).to.be.equal(1);
+            expect(loggedMessages.length).to.be.equal(2);
             expect(loggedMessages[0]).to.be.equal("Rebuild API HTTP trigger processed a request.");
+            expect(loggedMessages[1]).to.be.equal("Could not run GC.");
         });
 
         it("should call workflow factory", () => {
             expect(requestHandlerFactoryCalls).to.not.be.empty;
             expect(requestHandlerFactoryCalls.length).to.be.equal(1);
+        });
+    });
+
+    describe("Garbage collection", () => {
+        let stubFactory: Sinon.SinonStub;
+        let stubWorkflowInstance: Sinon.SinonStubbedInstance<RequestWorkflow>;
+
+        const mockRequest: HttpRequest = {
+            method: "POST",
+            body: {
+                SomeArg: "SomeValue"
+            },
+            headers: {
+                "Content-Type": "application/json"
+            },
+            url: "www.rebuild-is-awesome.com",
+            query: {},
+            params: {}
+        };
+
+        beforeEach(() => {
+            stubFactory = Sinon.stub(RequestHandlerFactory, "GetRequestHandler");
+            stubWorkflowInstance = Sinon.createStubInstance(RequestWorkflowBase);
+            stubWorkflowInstance.Response = {
+                statusCode: 200,
+                rawBody: "TEST",
+                headers: {
+                    testHeader: "banana"
+                }
+            };
+
+            stubFactory.returns(stubWorkflowInstance);
+        });
+
+        afterEach(() => {
+            stubFactory.restore();
+            global.gc = gcOrig;
+        });
+
+        describe("with gc switched on", () => {
+            let response;
+            let gcRan = false;
+
+            beforeEach(async () => {
+                loggedMessages = [];
+                mockContext.log = logMock;
+
+                global.gc = (): void => { gcRan = true; };
+
+                response = await httpTrigger(mockContext, mockRequest);
+            });
+
+            it("should log", () => {
+                expect(loggedMessages).lengthOf(2);
+                expect(loggedMessages[0]).to.equal("Rebuild API HTTP trigger processed a request.");
+                expect(loggedMessages[1]).to.equal("GC ran");
+            });
+
+            it("should run gc", () => {
+                expect(gcRan).to.be.true;
+            });
+
+            it("should have set response headers", () => {
+                expect(response, JSON.stringify(response)).to.not.be.undefined;
+                expect(response, JSON.stringify(response)).to.not.be.undefined;
+                expect(response.headers, JSON.stringify(response)).to.not.be.undefined;
+                expect(response.headers).to.not.be.null;
+                expect(response.headers["GC-RAN"]).to.equal("true");
+            });
+        });
+
+        describe("with gc switched off", () => {
+            let response;
+
+            beforeEach(async () => {
+                loggedMessages = [];
+                mockContext.log = logMock;
+                response = await httpTrigger(mockContext, mockRequest);
+            });
+
+            it("should log", () => {
+                expect(loggedMessages).lengthOf(2);
+                expect(loggedMessages[0]).to.equal("Rebuild API HTTP trigger processed a request.");
+                expect(loggedMessages[1]).to.equal("Could not run GC.");
+            });
+
+            it("should have set response headers", () => {
+                expect(response, JSON.stringify(response)).to.not.be.undefined;
+                expect(response, JSON.stringify(response)).to.not.be.undefined;
+                expect(response.headers, JSON.stringify(response)).to.not.be.undefined;
+                expect(response.headers).to.not.be.null;
+                expect(response.headers["GC-RAN"]).to.equal("false");
+            });
         });
     });
 });

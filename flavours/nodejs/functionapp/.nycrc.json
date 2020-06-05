@@ -4,7 +4,8 @@
   "check-coverage": true,
   "exclude": [
     "**/*.tests.ts",
-    "**/common/test"
+    "**/common/test",
+    ".eslintrc.js"
   ],
   "branches": 70,
   "lines": 70,
