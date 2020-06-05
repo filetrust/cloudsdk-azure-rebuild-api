@@ -1,4 +1,5 @@
 import Busboy = require("busboy");
+import { reject } from "async";
 
 export type multipart = {
     data: Buffer | string;
@@ -14,7 +15,7 @@ export const createBusBoy = (headers: { [header: string]: string }): busboy.Busb
 
 // eslint-disable-next-line no-var
 export var parseMultiPartForm = (fileBuffer: Buffer, headers: { [header: string]: string }): Promise<multipart[]> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const parts: multipart[] = [];
         const busboy = createBusBoy(headers);
         busboy.on("file", (fieldName, file, fileName, encoding, mimetype) => {
@@ -28,6 +29,7 @@ export var parseMultiPartForm = (fileBuffer: Buffer, headers: { [header: string]
                 });
             });
         });
+
         busboy.on("field", (fieldName, data) => {
             parts.push({
                 fieldName: fieldName.toLowerCase(),
@@ -35,12 +37,10 @@ export var parseMultiPartForm = (fileBuffer: Buffer, headers: { [header: string]
             });
         });
 
-        const success = busboy.write(fileBuffer);
+        busboy.on("finish", () => {
+            resolve(parts);
+        });
 
-        if (!success) {
-            reject("Could not parse form.");
-        }
-
-        resolve(parts);
+        busboy.write(fileBuffer);
     });
 };

@@ -5,8 +5,6 @@ import { expect } from "chai";
 import MultipartHelper = require("./multipartHelper");
 import { stub, SinonStub } from "sinon";
 import Busboy = require("busboy");
-import Sinon = require("sinon");
-import { fail } from "assert";
 
 let createBusBoyStub: SinonStub;
 
@@ -22,28 +20,6 @@ describe("parseMultiPartForm", () => {
 
     afterEach(() => {
         createBusBoyStub.restore();
-    });
-
-    describe("when callback has error", () => {
-        let busboyStubInstance: Sinon.SinonStubbedInstance<busboy.Busboy>;
-
-        beforeEach(() => {
-            busboyStubInstance = Sinon.createStubInstance(Busboy);
-            busboyStubInstance.write.returns(false);
-            createBusBoyStub.returns(busboyStubInstance);
-        });
-
-        it("should reject with error", async () => {
-            try {
-                await MultipartHelper.parseMultiPartForm(null, {
-                    "Content-Type": "multipart/form-data"
-                });
-
-                fail("should have been rejected");
-            } catch (err) {
-                expect(err).to.equal("Could not parse form.");
-            }
-        });
     });
 
     describe("when arguments are valid", () => {
