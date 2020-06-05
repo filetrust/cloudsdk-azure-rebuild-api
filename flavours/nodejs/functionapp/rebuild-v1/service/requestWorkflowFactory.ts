@@ -1,4 +1,4 @@
-import { RequestWorkflow, RequestWorkflowRequest, RequestWorkflowBase } from "./workflows/abstraction/requestWorkflow";
+import { RequestWorkflow, RequestWorkflowRequest } from "./workflows/abstraction/requestWorkflow";
 import RebuildUrlRequestHandler from "./workflows/rebuildUrlWorkflow";
 import StatusCodeHandler from "./workflows/statusCodeWorkflow";
 import RebuildBase64Workflow from "./workflows/rebuildBase64Workflow";

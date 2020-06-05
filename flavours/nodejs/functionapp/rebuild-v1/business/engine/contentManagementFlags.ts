@@ -29,9 +29,59 @@ const valueOrDefault = (flag?: number): string => {
     return cloudFlagToEngineFlag(flag);
 };
 
+export type EngineConfig = {
+    config:
+    {
+        pdfConfig:
+        {
+            acroform: string;
+            actions_all: string;
+            internal_hyperlinks: string;
+            external_hyperlinks: string;
+            embedded_files: string;
+            embedded_images: string;
+            javascript: string;
+            metadata: string;
+            watermark: "";
+        };
+        pptConfig:
+        {
+            embedded_files: string;
+            embedded_images: string;
+            internal_hyperlinks: string;
+            external_hyperlinks: string;
+            macros: string;
+            metadata: string;
+            review_comments: string;
+        };
+        xlsConfig:
+        {
+            embedded_files: string;
+            embedded_images: string;
+            internal_hyperlinks: string;
+            external_hyperlinks: string;
+            macros: string;
+            metadata: string;
+            review_comments: string;
+            dynamic_data_exchange: string;
+        };
+        wordConfig:
+        {
+            embedded_files: string;
+            embedded_images: string;
+            internal_hyperlinks: string;
+            external_hyperlinks: string;
+            macros: string;
+            metadata: string;
+            review_comments: string;
+            dynamic_data_exchange: string;
+        };
+    };
+};
+
 class ContentManagementFlags {
-    Adapt = (): string => {
-        const engineConfigObj = {
+    Adapt = (xmlSerialiser: (engineConfig: EngineConfig) => string = o2x): string => {
+        const engineConfigObj: EngineConfig = {
             config:
             {
                 pdfConfig:
@@ -81,7 +131,7 @@ class ContentManagementFlags {
             }
         };
 
-        return "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + o2x(engineConfigObj);
+        return "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + xmlSerialiser(engineConfigObj);
     }
 
     PdfContentManagement = {
@@ -90,7 +140,6 @@ class ContentManagementFlags {
         ExternalHyperlinks: 1,
         EmbeddedFiles: 1,
         EmbeddedImages: 1,
-
         Javascript: 1,
         Acroform: 1,
         ActionsAll: 1
@@ -102,7 +151,6 @@ class ContentManagementFlags {
         ExternalHyperlinks: 1,
         EmbeddedFiles: 1,
         EmbeddedImages: 1,
-
         DynamicDataExchange: 1,
         Macros: 1,
         ReviewComments: 1
@@ -114,7 +162,6 @@ class ContentManagementFlags {
         ExternalHyperlinks: 1,
         EmbeddedFiles: 1,
         EmbeddedImages: 1,
-
         Macros: 1,
         ReviewComments: 1
     }
@@ -125,7 +172,6 @@ class ContentManagementFlags {
         ExternalHyperlinks: 1,
         EmbeddedFiles: 1,
         EmbeddedImages: 1,
-
         DynamicDataExchange: 1,
         Macros: 1,
         ReviewComments: 1
