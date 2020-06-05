@@ -7,14 +7,16 @@
       "name": "req",
       "methods": [
         "get",
-        "post"
+        "post",
+        "put"
       ],
-      "route": "v1/rebuild/{action}"
+      "dataType": "binary",
+      "route": "{version}/{controller}/{action?}"
     },
     {
       "type": "http",
       "direction": "out",
-      "name": "res"
+      "name": "$return"
     }    
   ],
   "scriptFile": "../dist/rebuild-v1/index.js"

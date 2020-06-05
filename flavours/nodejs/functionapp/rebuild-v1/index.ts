@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import appInsights = require("applicationinsights");
 appInsights.setup("<instrumentation_key>")
     .setAutoDependencyCorrelation(true)
@@ -5,64 +6,62 @@ appInsights.setup("<instrumentation_key>")
     .setAutoCollectPerformance(true)
     .setAutoCollectExceptions(true)
     .setAutoCollectDependencies(true)
-    .setAutoCollectConsole(true)
+    .setAutoCollectConsole(true, true)
     .setUseDiskRetryCaching(true)
     .start();
 
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { requestHandlerArgs } from "./requestHandler";
-import RequestHandlerFactory from "./requestHandlerFactory";
+import RequestHandlerFactory from "./service/requestWorkflowFactory";
 
-const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-    context.log("HTTP trigger function processed a request.");
+const executeApi: AzureFunction = async (context: Context, req: HttpRequest) => {
+    const workflow = RequestHandlerFactory.GetRequestHandler(context, req);
 
-    context.res.setHeader("cwd", process.cwd());
+    await workflow.Handle();
 
-    const handler = RequestHandlerFactory.GetRequestHandler(req.url, context);
+    workflow.Response.headers["Access-Control-Expose-Headers"] = "*";
+    workflow.Response.headers["Access-Control-Allow-Headers"] = "*";
+    workflow.Response.headers["Access-Control-Allow-Origin"] = "*";
 
-    const handlerArgs: requestHandlerArgs = {
-        path: req.url,
-        headers: req.headers,
-        rawBody: req.body
+    return {
+        headers: workflow.Response.headers,
+        statusCode: workflow.Response.statusCode,
+        body: workflow.Response.rawBody
     };
+};
+
+const runGc = (context: Context, headers: { [x: string]: string }): void => {
+    try {
+        global.gc();
+        context.log("GC ran");
+        headers["GC-RAN"] = "true";
+    } catch (e) {
+        context.log("Could not run GC.");
+        headers["GC-RAN"] = "false";
+    }
+};
+
+const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest) {
+    let response: any;
 
     try {
-        const handlerResponse = await handler.Handle(handlerArgs);
-
-        if (handlerResponse.headers) {
-            Object.keys(handlerResponse.headers).forEach(header => {
-                context.res.setHeader(header, handlerResponse.headers[header]);
-            });
-        }
-
-        context.res.setHeader("Access-Control-Expose-Headers", "*");
-        context.res.setHeader("Access-Control-Allow-Headers", "*");
-        context.res.setHeader("Access-Control-Allow-Origin", "*");
-
-        if (handlerResponse.rawBody) {
-            context.res.body = handlerResponse.rawBody;
-        }
-
-        context.res.statusCode = handlerResponse.statusCode;
+        context.log("Rebuild API HTTP trigger processed a request.");
+        response = await executeApi(context, req);
     }
     catch (err) {
         context.log(err);
-        context.res.statusCode = 500;
-    }
-    finally {        
-        try {
-            if (global.gc) {
-                context.log("GC ran");
-                global.gc();
-                context.res.setHeader("GC-RAN", "true");
-            }
 
-            context.res.setHeader("GC-RAN", "false");
-        } catch (e) {
-            context.log("`node --expose-gc index.js`");
-            process.exit();
-        }
+        response = {
+            statusCode: 500,
+            headers: {
+                "Content-Type": "application/json"
+            }
+        };
     }
+    finally {
+        runGc(context, response.headers);
+    }
+
+    return response;
 };
 
 export default httpTrigger;
