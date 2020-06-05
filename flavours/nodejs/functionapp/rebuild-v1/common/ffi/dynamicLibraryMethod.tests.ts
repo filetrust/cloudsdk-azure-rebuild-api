@@ -38,6 +38,10 @@ describe("DynamicLibraryMethod", () => {
             expect(dlm.entryPoint).to.equal(entryPoint);
             expect(dlm.entryPointName).to.equal(entryPoint);
         });
+        
+        it("should be able not supply param types", async () => {
+            new DynamicLibraryMethod(mockLib, entryPoint, "string");
+        });
     });
 
     describe("Dispose", () => {
@@ -117,6 +121,15 @@ describe("DynamicLibraryMethod", () => {
 
             const result = dlm.Execute(1, 2, 3, 4, 5, 6);
             expect(result).lengthOf(6);
+        });
+        
+        it("should execute entrypoint with 7 args", async () => {
+            const dlm = new DynamicLibraryMethod(mockLib, entryPoint, "string", [
+                "string"
+            ]);
+
+            const result = dlm.Execute(1, 2, 3, 4, 5, 6, 7);
+            expect(result).lengthOf(7);
         });
     });
 });

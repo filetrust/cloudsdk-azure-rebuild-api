@@ -525,5 +525,47 @@ describe("rebuild file workflow", () => {
                 expect(Object.keys(workflow.Response.headers).length).to.equal(14);
             });
         });
+
+        describe("when there are no files in the form", () => {
+            beforeEach(async () => {
+                commonSetup();
+
+                multipartHelper.parseMultiPartForm = async (): Promise<multipartHelper.multipart[]> => {
+                    return [];
+                };
+
+                await workflow.Handle();
+            });
+
+            it("should log error", () => {
+                expect(mockLogger.loggedMessages.length).to.equal(1);
+                expect(mockLogger.loggedMessages[0]).to.equal("File could not be found in form");
+            });
+
+            it("should set status code to 400", () => {
+                expect(workflow.Response.statusCode).to.equal(400);
+            });
+        });
+        
+        describe("when file has no data", () => {
+            beforeEach(async () => {
+                commonSetup();
+
+                multipartHelper.parseMultiPartForm = async (): Promise<multipartHelper.multipart[]> => {
+                    return [
+                        {
+                            data: null,
+                            fieldName: "file"
+                        }
+                    ];
+                };
+
+                await workflow.Handle();
+            });
+
+            it("should set status code to 400", () => {
+                expect(workflow.Response.statusCode).to.equal(400);
+            });
+        });
     });
 });

@@ -17,7 +17,6 @@ let dynamicLibraryStub: SinonStub;
 let methodWrapperStub: SinonStub;
 
 let readUInt64LEStub: SinonStub;
-let readUInt64LEStubResult: number;
 
 let readPointerStub: SinonStub;
 let readPointerStubResult: Buffer;
@@ -296,8 +295,7 @@ describe("libGlasswallClassic", () => {
                 inputFileType = "png";
                 outputBuffer = Buffer.from("Banana");                
 
-                readUInt64LEStubResult = 5;
-                readUInt64LEStub.returns(readPointerStubResult);
+                readUInt64LEStub.returns(5);
 
                 readPointerStubResult = outputBuffer;
                 readPointerStub.returns(readPointerStubResult);
@@ -352,76 +350,6 @@ describe("libGlasswallClassic", () => {
             });
         });
     });
-
-    // describe("GWFileVersion", () => {
-    //     beforeEach(() => {
-    //         existsStub.returns(true);
-
-    //         engine = new LibGlasswallClassic(inputPath);
-    //     });
-
-    //     it("should execute method", () => {
-    //         expect(lib.close.getCalls()).lengthOf(1);
-    //         expect(lib.close.getCall(0).args).lengthOf(0);
-    //     });
-    // });
-
-
-    // describe("GWFileVersion", () => {
-    //     beforeEach(() => {
-    //         existsStub.returns(true);
-
-    //         engine = new LibGlasswallClassic(inputPath);
-    //     });
-
-    //     it("should execute method", () => {
-    //         expect(lib.close.getCalls()).lengthOf(1);
-    //         expect(lib.close.getCall(0).args).lengthOf(0);
-    //     });
-    // });
-
-
-    // describe("GWFileVersion", () => {
-    //     beforeEach(() => {
-    //         existsStub.returns(true);
-
-    //         engine = new LibGlasswallClassic(inputPath);
-    //     });
-
-    //     it("should execute method", () => {
-    //         expect(lib.close.getCalls()).lengthOf(1);
-    //         expect(lib.close.getCall(0).args).lengthOf(0);
-    //     });
-    // });
-
-
-    // describe("GWFileVersion", () => {
-    //     beforeEach(() => {
-    //         existsStub.returns(true);
-
-    //         engine = new LibGlasswallClassic(inputPath);
-    //     });
-
-    //     it("should execute method", () => {
-    //         expect(lib.close.getCalls()).lengthOf(1);
-    //         expect(lib.close.getCall(0).args).lengthOf(0);
-    //     });
-    // });
-
-
-    // describe("GWFileVersion", () => {
-    //     beforeEach(() => {
-    //         existsStub.returns(true);
-
-    //         engine = new LibGlasswallClassic(inputPath);
-    //     });
-
-    //     it("should execute method", () => {
-    //         expect(lib.close.getCalls()).lengthOf(1);
-    //         expect(lib.close.getCall(0).args).lengthOf(0);
-    //     });
-    // });
-
 
     describe("Dispose", () => {
         beforeEach(() => {

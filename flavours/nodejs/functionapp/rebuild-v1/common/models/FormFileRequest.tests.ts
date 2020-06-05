@@ -52,7 +52,6 @@ describe("Form File Request", () => {
         });
 
         it("should set cmp to default if not supplied", () => {
-            const defaultCmp = new ContentManagementFlags();
             const request = new FormFileRequest([
                 {
                     fieldName: "file",
@@ -63,22 +62,22 @@ describe("Form File Request", () => {
             expect(request.ContentManagementFlags.Adapt).to.not.be.undefined;
             Object.keys(request.ContentManagementFlags.ExcelContentManagement).forEach(flag => {
                 expect(request.ContentManagementFlags.ExcelContentManagement[flag])
-                    .to.equal(request.ContentManagementFlags.ExcelContentManagement[flag])
+                    .to.equal(request.ContentManagementFlags.ExcelContentManagement[flag]);
             });
 
             Object.keys(request.ContentManagementFlags.WordContentManagement).forEach(flag => {
                 expect(request.ContentManagementFlags.WordContentManagement[flag])
-                    .to.equal(request.ContentManagementFlags.WordContentManagement[flag])
+                    .to.equal(request.ContentManagementFlags.WordContentManagement[flag]);
             });
 
             Object.keys(request.ContentManagementFlags.PowerPointContentManagement).forEach(flag => {
                 expect(request.ContentManagementFlags.PowerPointContentManagement[flag])
-                    .to.equal(request.ContentManagementFlags.PowerPointContentManagement[flag])
+                    .to.equal(request.ContentManagementFlags.PowerPointContentManagement[flag]);
             });
 
             Object.keys(request.ContentManagementFlags.PdfContentManagement).forEach(flag => {
                 expect(request.ContentManagementFlags.PdfContentManagement[flag])
-                    .to.equal(request.ContentManagementFlags.PdfContentManagement[flag])
+                    .to.equal(request.ContentManagementFlags.PdfContentManagement[flag]);
             });
         });
 
@@ -107,22 +106,22 @@ describe("Form File Request", () => {
                 }
 
                 expect(request.ContentManagementFlags.ExcelContentManagement[flag])
-                    .to.equal(request.ContentManagementFlags.ExcelContentManagement[flag])
+                    .to.equal(request.ContentManagementFlags.ExcelContentManagement[flag]);
             });
 
             Object.keys(request.ContentManagementFlags.WordContentManagement).forEach(flag => {
                 expect(request.ContentManagementFlags.WordContentManagement[flag])
-                    .to.equal(request.ContentManagementFlags.WordContentManagement[flag])
+                    .to.equal(request.ContentManagementFlags.WordContentManagement[flag]);
             });
 
             Object.keys(request.ContentManagementFlags.PowerPointContentManagement).forEach(flag => {
                 expect(request.ContentManagementFlags.PowerPointContentManagement[flag])
-                    .to.equal(request.ContentManagementFlags.PowerPointContentManagement[flag])
+                    .to.equal(request.ContentManagementFlags.PowerPointContentManagement[flag]);
             });
 
             Object.keys(request.ContentManagementFlags.PdfContentManagement).forEach(flag => {
                 expect(request.ContentManagementFlags.PdfContentManagement[flag])
-                    .to.equal(request.ContentManagementFlags.PdfContentManagement[flag])
+                    .to.equal(request.ContentManagementFlags.PdfContentManagement[flag]);
             });
         });
     });
@@ -144,6 +143,6 @@ describe("Form File Request", () => {
             }
         ]);
 
-        expect(request.Errors.ContentManagementPolicy).to.equal("Unexpected item found in policy: banana")
+        expect(request.Errors.ContentManagementPolicy).to.equal("Unexpected item found in policy: banana");
     });
 });

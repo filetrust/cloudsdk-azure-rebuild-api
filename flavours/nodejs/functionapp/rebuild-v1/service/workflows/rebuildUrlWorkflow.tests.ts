@@ -519,5 +519,73 @@ describe("rebuild url workflow", () => {
                 expect(Object.keys(workflow.Response.headers).length).to.equal(14);
             });
         });
+        
+        describe("when download file throws", () => {
+            beforeEach(async () => {
+                commonSetup();
+
+                HttpFileOperations.downloadFile = async(): Promise<Buffer> => {
+                    throw "error"; 
+                };
+
+                workflow.Request.body = {
+                    InputGetUrl: "in",
+                    OutputPutUrl: "out"
+                };
+
+                await workflow.Handle();
+            });
+
+            it("should set status code to 400", () => {
+                expect(workflow.Response.statusCode).to.equal(400);
+            });
+
+            it("should log", () => {
+                expect(mockLogger.loggedMessages).lengthOf(1);
+                expect(mockLogger.loggedMessages[0]).to.contain("Could not download input file:");
+            });
+        });
+        
+        describe("when download file returns null", () => {
+            beforeEach(async () => {
+                commonSetup();
+
+                HttpFileOperations.downloadFile = (): Promise<Buffer> => {
+                    return null;
+                };
+
+                workflow.Request.body = {
+                    InputGetUrl: "in",
+                    OutputPutUrl: "out"
+                };
+
+                await workflow.Handle();
+            });
+
+            it("should set status code to 400", () => {
+                expect(workflow.Response.statusCode).to.equal(400);
+            });
+        });
+
+        describe("when upload fails", () => {
+            beforeEach(async () => {
+                commonSetup();
+
+                HttpFileOperations.uploadFile = (): Promise<string> => {
+                    throw "error";
+                };
+
+                workflow.Request.body = {
+                    InputGetUrl: "in",
+                    OutputPutUrl: "out"
+                };
+
+                await workflow.Handle();
+            });
+
+            it("should set status code to 400", () => {
+                expect(workflow.Response.statusCode).to.equal(400);
+            });
+        });
     });
 });

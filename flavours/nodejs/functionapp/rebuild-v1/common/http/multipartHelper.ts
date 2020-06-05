@@ -27,18 +27,15 @@ export var parseMultiPartForm = (fileBuffer: Buffer, headers: { [header: string]
                     mimetype
                 });
             });
-        }).on("field", (fieldName, data) => {
+        });
+        busboy.on("field", (fieldName, data) => {
             parts.push({
                 fieldName: fieldName.toLowerCase(),
                 data
             });
         });
 
-        const success = busboy.write(fileBuffer, cb => {
-            if (cb) {
-                reject(cb);
-            }
-        });
+        const success = busboy.write(fileBuffer);
 
         if (!success) {
             reject("Could not parse form.");

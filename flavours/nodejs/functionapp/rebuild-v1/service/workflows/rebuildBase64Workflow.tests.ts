@@ -18,14 +18,20 @@ import Metric from "../../common/metric";
 import FileType from "../../business/engine/enums/fileType";
 import ContentManagementFlags from "../../business/engine/contentManagementFlags";
 import MockLogger from "../../common/test/mocks/mockLogger";
+import Sinon = require("sinon");
 
-const mockLogger = new MockLogger();
+let mockLogger: MockLogger;
+const fromOrig = Buffer.from;
 
 describe("base64workflow", () => {
     const requestMock: RequestWorkflowRequest = {
         method: "POST",
         url: "example.com"
     };
+
+    beforeEach(() => {
+        mockLogger = new MockLogger();
+    });
 
     describe("constructor", () => {
         it("should construct with valid arguments", () => {
@@ -521,6 +527,72 @@ describe("base64workflow", () => {
 
             it("should have set the correct number of headers", () => {
                 expect(Object.keys(workflow.Response.headers).length).to.equal(14);
+            });
+        });
+
+        describe("when file cannot be read", () => {
+            let err: Error;
+
+            beforeEach(async () => {
+                err = new Error();
+                workflow = new RebuildBase64Workflow(mockLogger, {
+                    method: "POST",
+                    url: "example.com",
+                });
+
+                workflow.Request.body = {
+                    Base64: "some string"
+                };
+                
+                Buffer.from = (): Buffer => {
+                    throw err;
+                };
+                
+                await workflow.Handle();
+            });
+
+            afterEach(() => {
+                Buffer.from = fromOrig;
+            });
+
+            it("should return bad request", () => {
+                expect(workflow.Response.statusCode, JSON.stringify(workflow)).to.equal(400);
+            });
+
+            it("message is logged", () => {
+                expect(mockLogger.loggedMessages).lengthOf(1);
+                expect(mockLogger.loggedMessages[0]).to.equal("Could not download input file: " + err);
+            });
+        });
+        
+        describe("when decode returns null", () => {
+            beforeEach(async () => {
+                workflow = new RebuildBase64Workflow(mockLogger, {
+                    method: "POST",
+                    url: "example.com",
+                });
+
+                workflow.Request.body = {
+                    Base64: "some string"
+                };
+                
+                Buffer.from = (): Buffer => {
+                    return null;
+                };
+                
+                await workflow.Handle();
+            });
+
+            afterEach(() => {
+                Buffer.from = fromOrig;
+            });
+
+            it("should return bad request", () => {
+                expect(workflow.Response.statusCode, JSON.stringify(workflow)).to.equal(400);
+            });
+
+            it("message is not logged", () => {
+                expect(mockLogger.loggedMessages).lengthOf(0);
             });
         });
     });

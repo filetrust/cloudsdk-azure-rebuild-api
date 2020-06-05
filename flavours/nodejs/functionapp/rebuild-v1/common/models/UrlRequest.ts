@@ -13,26 +13,20 @@ export default class UrlRequest extends RequestModelBase {
             return;
         }
 
-        if (!payload) {
-            this.setModelError("Body", "Not Supplied");
+        if (!(payload.InputGetUrl && payload.InputGetUrl.length)) {
+            this.setModelError("InputGetUrl", "Not Supplied");
         }
-        else {
-            if (!(payload.InputGetUrl && payload.InputGetUrl.length)) {
-                this.setModelError("InputGetUrl", "Not Supplied");
-            }
 
-            if (!(payload.OutputPutUrl && payload.OutputPutUrl.length)) {
-                this.setModelError("OutputPutUrl", "Not Supplied");
-            }
-
-            if (Object.keys(this.Errors).length)
-            {
-                return;
-            }
-
-            this.InputGetUrl = payload.InputGetUrl;
-            this.OutputPutUrl = payload.OutputPutUrl;
-            this.loadCmp(payload.ContentManagementFlags);
+        if (!(payload.OutputPutUrl && payload.OutputPutUrl.length)) {
+            this.setModelError("OutputPutUrl", "Not Supplied");
         }
+
+        if (Object.keys(this.Errors).length) {
+            return;
+        }
+
+        this.InputGetUrl = payload.InputGetUrl;
+        this.OutputPutUrl = payload.OutputPutUrl;
+        this.loadCmp(payload.ContentManagementFlags);
     }
 }

@@ -13,24 +13,7 @@ class RebuildBase64Workflow extends RebuildWorkflowBase {
         let payload: Base64Request;
 
         try {
-            let body = this.Request.body;
-            if (this.Request.body instanceof String) {
-                try {
-                    body = JSON.parse(this.Request.body as string);
-                }
-                catch (err) {
-                    this.Response.statusCode = 400;
-                    this.Response.rawBody = {
-                        errors: {
-                            "JSON": "The JSON supplied was invalid"
-                        }
-                    };
-                    this.Logger.log(err);
-                    return;
-                }
-            }
-            
-            payload = new Base64Request(body);
+            payload = new Base64Request(this.Request.body);
 
             if (Object.keys(payload.Errors).length) {
                 this.Response.statusCode = 400;
@@ -97,17 +80,15 @@ class RebuildBase64Workflow extends RebuildWorkflowBase {
         try {
             fileBuffer = Buffer.from(base64, "base64");
 
-            if (fileBuffer && fileBuffer.length) {
+            if (fileBuffer) {
                 this.Response.headers[Metric.Base64DecodeTime] = timer.Elapsed();
                 this.Response.headers[Metric.FileSize] = fileBuffer.length;
 
                 this.Logger.log("File decoded from Base64, file length: '" + fileBuffer.length + "'");
-            } else {
-                throw "File did not contain any data";
             }
         }
         catch (err) {
-            this.Logger.log("Could not download input file: " + err.stack);
+            this.Logger.log("Could not download input file: " + err);
         }
 
         return fileBuffer;

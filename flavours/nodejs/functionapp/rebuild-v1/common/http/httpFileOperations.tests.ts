@@ -2,7 +2,6 @@
 /* Third party*/
 import "mocha";
 import { expect } from "chai";
-import fetchMock = require("fetch-mock");
 import HttpFileOperations from "./httpFileOperations";
 import fetch = require("node-fetch");
 import { stub, SinonStub } from "sinon";
@@ -123,17 +122,17 @@ describe("HttpFileOperations", () => {
             });
         });
 
-        describe("when status is OK", () => {
+        describe("when status is OK with etag", () => {
             const inputUrl = "www.glasswall.com";
             const inputBuffer = Buffer.from("test");
             const expectedEtag = "\"ETAG\"";
-            let actualEtag: String;
+            let actualEtag: string;
 
             beforeEach(async () => {
                 fetchStubResult = {
                     ok: true,
                     headers: {
-                        get: (header: string) => {
+                        get: (header: string): string => {
                             if (header === "etag")
                             {
                                 return expectedEtag;
@@ -163,6 +162,47 @@ describe("HttpFileOperations", () => {
                 expect(fetchStub.getCall(0).args[1].method).to.equal("PUT");
                 expect(fetchStub.getCall(0).args[1].body).to.equal(inputBuffer);
             });
+        });
+    });
+    
+    describe("when status is OK with no etag", () => {
+        const inputUrl = "www.glasswall.com";
+        const inputBuffer = Buffer.from("test");
+        let actualEtag: string;
+
+        beforeEach(async () => {
+            fetchStubResult = {
+                ok: true,
+                headers: {
+                    get: (header: string): string => {
+                        if (header === "etag")
+                        {
+                            return null;
+                        }
+
+                        throw "You should never have come here";
+                    }
+                }
+            };
+
+            fetchStub = stub(fetch, "default").returns(fetchStubResult);
+            actualEtag = await HttpFileOperations.uploadFile(inputUrl, inputBuffer);
+        });
+
+        afterEach(() => {
+            fetchStub.restore();
+        });
+
+        it("should respond with etag", async () => {
+            expect(actualEtag).to.equal("\"\"");
+        });
+        
+        it("should have called fetch", async () => {
+            expect(fetchStub.getCalls()).lengthOf(1);
+            expect(fetchStub.getCall(0).args).lengthOf(2);
+            expect(fetchStub.getCall(0).args[0]).to.equal(inputUrl);
+            expect(fetchStub.getCall(0).args[1].method).to.equal("PUT");
+            expect(fetchStub.getCall(0).args[1].body).to.equal(inputBuffer);
         });
     });
 });

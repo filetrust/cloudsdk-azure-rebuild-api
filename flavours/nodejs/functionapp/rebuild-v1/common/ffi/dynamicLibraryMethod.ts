@@ -7,7 +7,7 @@ class DynamicLibraryMethod {
     entryPoint: ffi.ForeignFunction;
     entryPointName: string;
 
-    constructor(dynamicLibrary: ffi.DynamicLibrary, entryPointName: string, returnType: ref.Type | string, paramTypes: Array<ref.Type|string>) {
+    constructor(dynamicLibrary: ffi.DynamicLibrary, entryPointName: string, returnType: ref.Type | string, paramTypes?: Array<ref.Type|string>) {
         this.dynamicLibrary = dynamicLibrary;
         this.entryPointPtr = this.dynamicLibrary.get(entryPointName);
 
@@ -63,6 +63,8 @@ class DynamicLibraryMethod {
         {
             return this.entryPoint(args[0], args[1], args[2], args[3], args[4], args[5]);
         }
+
+        return this.entryPoint(...args);
     }
 }
 

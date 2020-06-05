@@ -7,25 +7,13 @@ import UrlRequest from "../../common/models/UrlRequest";
 import HttpFileOperations from "../../common/http/httpFileOperations";
 import Metric from "../../common/metric";
 import Timer from "../../common/timer";
-import { isError } from "util";
 
 class RebuildUrlWorkflow extends RebuildWorkflowBase {
     async Handle(): Promise<void> {
         let engineService: EngineService;
-        let body = this.Request.body;
 
         try {
-            
-            if (this.Request.body instanceof String) {
-                try {
-                    body = JSON.parse(this.Request.body as string);
-                }
-                catch (err) {
-                    this.Response.statusCode = 400;
-                }
-            }
-
-            const payload = new UrlRequest(body);
+            const payload = new UrlRequest(this.Request.body);
 
             if (Object.keys(payload.Errors).length) {
                 this.Response.statusCode = 400;
@@ -90,17 +78,15 @@ class RebuildUrlWorkflow extends RebuildWorkflowBase {
         try {
             fileBuffer = await HttpFileOperations.downloadFile(payload.InputGetUrl);
 
-            if (fileBuffer && fileBuffer.length) {
+            if (fileBuffer) {
                 this.Response.headers[Metric.DownloadTime] = timer.Elapsed();
                 this.Response.headers[Metric.FileSize] = fileBuffer.length;
 
                 this.Logger.log("File downloaded, file length: '" + fileBuffer.length + "'");
-            } else {
-                throw "File did not contain any data";
-            }
+            } 
         }
         catch (err) {
-            this.Logger.log("Could not download input file: " + err.stack);
+            this.Logger.log("Could not download input file: " + err);
         }
 
         return fileBuffer;

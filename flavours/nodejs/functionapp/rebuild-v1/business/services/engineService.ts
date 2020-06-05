@@ -3,6 +3,7 @@ import FileType from "../engine/enums/fileType";
 import EngineOutcome from "../engine/enums/engineOutcome";
 import LibGlasswallClassic from "../engine/libGlasswallClassic";
 import ContentManagementFlags from "../engine/contentManagementFlags";
+import { ArgumentNullException, ArgumentException } from "../../common/errors/errors";
 
 export type EngineStatusResponse = {
     engineOutcome: number;
@@ -28,13 +29,10 @@ class EngineService {
 
     constructor(logger: { log: (message: string) => void }) {
         this.Logger = logger;
-        const path = process.cwd() + (process.platform == "win32" ?
-            "\\dist\\lib\\windows\\SDK\\glasswall.classic.dll"
-            : "/dist/lib/linux/SDK/libglasswall.classic.so");
-            
-        logger.log("Loading engine from " + path);
-        this.Sdk = new LibGlasswallClassic(path);
-        logger.log("Engine successfully loaded from " + path);
+        this.Sdk = new LibGlasswallClassic(
+            process.cwd() + (process.platform == "win32" ?
+                "\\dist\\lib\\windows\\SDK\\glasswall.classic.dll"
+                : "/dist/lib/linux/SDK/libglasswall.classic.so"));
     }
 
     Dispose(): void {
@@ -55,7 +53,11 @@ class EngineService {
 
     GetFileType(buffer: Buffer): FileTypeResponse {
         if (!buffer) {
-            throw "Buffer was not defined";
+            throw new ArgumentNullException("buffer");
+        }
+
+        if (!buffer.length) {
+            throw new ArgumentException("buffer", "Buffer cannot be empty.");
         }
 
         try {
@@ -83,6 +85,10 @@ class EngineService {
     }
 
     SetConfiguration(contentManagementFlags: ContentManagementFlags): EngineStatusResponse {
+        if (!contentManagementFlags) {
+            throw new ArgumentNullException("contentManagementFlags");
+        }
+
         try {
             const xmlConfig = contentManagementFlags.Adapt();
             const engineOutcome = this.Sdk.GWFileConfigXML(xmlConfig);
@@ -92,8 +98,9 @@ class EngineService {
                 const error = this.Sdk.GWFileErrorMsg();
                 throw `Could not set Engine Configuration, status: ${engineOutcomeName} error: ${error}`;
             }
-
-            this.Logger.log("Successfully set configuration");
+            else {
+                this.Logger.log("Successfully set configuration");
+            }
 
             return {
                 engineOutcome,
@@ -108,7 +115,15 @@ class EngineService {
 
     Rebuild(buffer: Buffer, fileType: string): RebuildResponse {
         if (!buffer) {
-            throw "Buffer was not defined";
+            throw new ArgumentNullException("buffer");
+        }
+
+        if (!buffer.length) {
+            throw new ArgumentException("buffer", "Buffer cannot be empty.");
+        }
+
+        if (!fileType) {
+            throw new ArgumentNullException("fileType");
         }
 
         try {
@@ -158,7 +173,7 @@ class EngineService {
             return this.Sdk.GWFileErrorMsg();
         }
         catch (err) {
-            this.Logger.log("Error getting Error from engine: " + err);
+            this.Logger.log("Error getting Error from engine: " + err.toString());
             throw err;
         }
     }

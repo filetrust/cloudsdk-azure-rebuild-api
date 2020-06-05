@@ -8,9 +8,8 @@ export default class FormFileRequest extends RequestModelBase {
 
     constructor(form: multipart[]) {
         super();
-        
-        if (!form)
-        {
+
+        if (!form) {
             this.setModelError("Form", "Could not read the supplied form.");
             return;
         }
@@ -22,14 +21,9 @@ export default class FormFileRequest extends RequestModelBase {
             this.setModelError("File", "Not Supplied");
             return;
         }
-        else
+        
         if (!filePart.data || !filePart.data.length) {
             this.setModelError("File", "File does not have any data");
-            return;
-        }
-
-        if (Object.keys(this.Errors).length)
-        {
             return;
         }
 

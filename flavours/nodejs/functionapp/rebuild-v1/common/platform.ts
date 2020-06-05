@@ -1,3 +1,3 @@
-export function getProcessPlatform() {
+export const getProcessPlatform = () => {
     return process.platform;
-}
+};

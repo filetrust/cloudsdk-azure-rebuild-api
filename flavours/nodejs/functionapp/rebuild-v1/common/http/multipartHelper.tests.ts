@@ -5,6 +5,8 @@ import { expect } from "chai";
 import MultipartHelper = require("./multipartHelper");
 import { stub, SinonStub } from "sinon";
 import Busboy = require("busboy");
+import Sinon = require("sinon");
+import { fail } from "assert";
 
 let createBusBoyStub: SinonStub;
 
@@ -22,27 +24,49 @@ describe("parseMultiPartForm", () => {
         createBusBoyStub.restore();
     });
 
+    describe("when callback has error", () => {
+        let busboyStubInstance: Sinon.SinonStubbedInstance<busboy.Busboy>;
+
+        beforeEach(() => {
+            busboyStubInstance = Sinon.createStubInstance(Busboy);
+            busboyStubInstance.write.returns(false);
+            createBusBoyStub.returns(busboyStubInstance);
+        });
+
+        it("should reject with error", async () => {
+            try {
+                await MultipartHelper.parseMultiPartForm(null, {
+                    "Content-Type": "multipart/form-data"
+                });
+
+                fail("should have been rejected");
+            } catch (err) {
+                expect(err).to.equal("Could not parse form.");
+            }
+        });
+    });
+
     describe("when arguments are valid", () => {
         let result: MultipartHelper.multipart[];
         let inputBuffer: Buffer;
         let inputHeaders: { [header: string]: string };
 
-        beforeEach(async() => {
+        beforeEach(async () => {
             inputBuffer = Buffer.from(
                 "-----------------------------9051914041544843365972754266"
-              + "\r\nContent-Disposition: form-data; name=\"Text\"" 
-              + "\r\n\r\ntext default"
-              + "\r\n-----------------------------9051914041544843365972754266" 
-              + "\r\nContent-Disposition: form-data; name=\"file1\"; filename=\"a.txt\"\r\nContent-Type: text/plain" 
-              + "\r\n\r\nContent of a.txt." 
-              + "\r\n-----------------------------9051914041544843365972754266"
-              + "\r\nContent-Disposition: form-data; name=\"file2\"; filename=\"a.html\"\r\nContent-Type: text/html"
-              + "\r\n\r\n<!DOCTYPE html><title>Content of a.html.</title>"
-              + "\r\n-----------------------------9051914041544843365972754266--");
+                + "\r\nContent-Disposition: form-data; name=\"Text\""
+                + "\r\n\r\ntext default"
+                + "\r\n-----------------------------9051914041544843365972754266"
+                + "\r\nContent-Disposition: form-data; name=\"file1\"; filename=\"a.txt\"\r\nContent-Type: text/plain"
+                + "\r\n\r\nContent of a.txt."
+                + "\r\n-----------------------------9051914041544843365972754266"
+                + "\r\nContent-Disposition: form-data; name=\"file2\"; filename=\"a.html\"\r\nContent-Type: text/html"
+                + "\r\n\r\n<!DOCTYPE html><title>Content of a.html.</title>"
+                + "\r\n-----------------------------9051914041544843365972754266--");
             inputHeaders = {
                 "Content-Type": "multipart/form-data"
             };
-            
+
             result = await MultipartHelper.parseMultiPartForm(inputBuffer, inputHeaders);
         });
 
@@ -58,14 +82,14 @@ describe("parseMultiPartForm", () => {
             expect(result[0].fileName).to.equal(undefined);
             expect(result[0].mimetype).to.equal(undefined);
         });
-        
+
         it("should return files", () => {
             expect(result[1].fieldName).to.equal("file1");
             expect(result[1].data.toString()).to.equal("Content of a.txt.");
             expect(result[1].encoding).to.equal("7bit");
             expect(result[1].fileName).to.equal("a.txt");
             expect(result[1].mimetype).to.equal("text/plain");
-            
+
             expect(result[2].fieldName).to.equal("file2");
             expect(result[2].data.toString()).to.equal("<!DOCTYPE html><title>Content of a.html.</title>");
             expect(result[2].encoding).to.equal("7bit");

@@ -77,17 +77,13 @@ class RebuildFileWorkflow extends RebuildWorkflowBase {
                 throw "File could not be found in form";
             }
 
-            if (file.data && file.data.length) {
+            if (file.data) {
                 this.Response.headers[Metric.FormFileReadTime] = timer.Elapsed();
                 this.Response.headers[Metric.FileSize] = file.data.length;
 
                 this.Logger.log("File found in form, file length: '" + file.data.length + "'");
-            } else {
-                throw "File did not contain any data";
             }
-
-            this.Response.headers[Metric.FileSize] = file.data.length;
-
+            
             return form;
         }
         catch (err) {
