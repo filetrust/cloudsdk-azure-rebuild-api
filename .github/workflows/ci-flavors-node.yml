@@ -4,6 +4,10 @@ on:
   push:
     branches: [sb-serverless]
 
+defaults:
+  run:
+    working-directory: flavours/nodejs/functionapp
+
 jobs:
   package:
     runs-on: ubuntu-latest
@@ -28,7 +32,6 @@ jobs:
       with:
         name: Rebuild
         path: .serverless/rebuild-node.zip
-    working-directory: flavours/nodejs/functionapp
       
   deploy-to-qa:
     runs-on: ubuntu-latest
@@ -44,7 +47,6 @@ jobs:
       with:
         path: .serverless/rebuild-node.zip
         name: Rebuild
-    working-directory: flavours/nodejs/functionapp
   # - uses: actions/setup-node@v1
   #   with:
   #     node-version: '12.x'
