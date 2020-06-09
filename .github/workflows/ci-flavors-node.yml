@@ -14,23 +14,21 @@ jobs:
         submodules: true
         token: ${{ secrets.TOKEN_GITHUB }}
     - name: Build
-      working-directory: flavours/nodejs/functionapp
       run: |
         npm install
         npm run build
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
     - name: Serverless Package 🚀
-      working-directory: flavours/nodejs/functionapp
       uses: aaronpanch/action-serverless@v1.0.0
       with:
         args: package
     - name: Upload package 📦
-      working-directory: flavours/nodejs/functionapp
       uses: actions/upload-artifact@v1
       with:
         name: Rebuild
         path: .serverless/rebuild-node.zip
+    working-directory: flavours/nodejs/functionapp
       
   deploy-to-qa:
     runs-on: ubuntu-latest
@@ -42,11 +40,11 @@ jobs:
         submodules: true
         token: ${{ secrets.TOKEN_GITHUB }}
     - name: Download package 📦
-      working-directory: flavours/nodejs/functionapp
       uses: actions/download-artifact@v1
       with:
         path: .serverless/rebuild-node.zip
         name: Rebuild
+    working-directory: flavours/nodejs/functionapp
   # - uses: actions/setup-node@v1
   #   with:
   #     node-version: '12.x'
