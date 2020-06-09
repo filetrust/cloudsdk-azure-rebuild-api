@@ -6,6 +6,16 @@ provider:
   name: azure
   region: UK South
   runtime: nodejs12
+  functionApp:
+    name: sls-uks-qa-rebuild-node
+    sku:
+      name: B1
+      tier: Basic
+  appServicePlan: 
+    name: sls-uks-qa-rebuild-node
+    sku:
+      name: B1
+      tier: Basic
   environment:
     # WEBSITE_NODE_DEFAULT_VERSION: ~12
     # FUNCTIONS_EXTENSION_VERSION: ~3
@@ -18,6 +28,8 @@ package:
     - src/**
     - .nyc_output/**
     - .vscode/**
+    - .dist/**/*.tests.js
+    - .dist/**/*.tests.js.map
     - .eslintignore
     - .eslintrc.js
     - .nycrc.json
@@ -27,7 +39,7 @@ package:
 
 functions:
   rebuild-url-v1:
-    handler: dist/rebuild-v1/index
+    handler: dist/src/index
     events:
       - http: true
         x-azure-settings:
@@ -43,7 +55,7 @@ functions:
           dataType: binary
           name: $return
   rebuild-file-v1:
-    handler: dist/rebuild-v1/index
+    handler: dist/src/index
     events:
       - http: true
         x-azure-settings:
@@ -59,7 +71,7 @@ functions:
           dataType: binary
           name: $return
   rebuild-base64-v1:
-    handler: dist/rebuild-v1/index
+    handler: dist/src/index
     events:
       - http: true
         x-azure-settings:
@@ -75,7 +87,7 @@ functions:
           dataType: binary
           name: $return
   health-v1:
-    handler: dist/rebuild-v1/index
+    handler: dist/src/index
     events:
       - http: true
         x-azure-settings:
