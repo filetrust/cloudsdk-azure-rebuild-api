@@ -23,12 +23,14 @@ jobs:
     - name: Serverless Package 🚀
       uses: aaronpanch/action-serverless@v1.0.0
       with:
-        args: package -p flavours/nodejs/functionapp
+        args: package
+      env: 
+        SERVICE_ROOT: flavours/nodejs/functionapp
     - name: Upload package 📦
       uses: actions/upload-artifact@v1
       with:
-        name: Rebuild
-        path: .serverless/rebuild-node.zip
+        name: RebuildNodeJs
+        path: flavours/nodejs/functionapp/.serverless
       
   deploy-to-qa:
     runs-on: ubuntu-latest
@@ -42,8 +44,8 @@ jobs:
     - name: Download package 📦
       uses: actions/download-artifact@v1
       with:
-        path: .serverless/rebuild-node.zip
-        name: Rebuild
+        path: flavours/nodejs/functionapp/.serverless
+        name: RebuildNodeJs
   # - uses: actions/setup-node@v1
   #   with:
   #     node-version: '12.x'
