@@ -23,7 +23,7 @@ jobs:
     - name: Serverless Package 🚀
       uses: aaronpanch/action-serverless@v1.0.0
       with:
-        args: deploy --noDeploy
+        args: package
     - name: Upload package 📦
       uses: actions/upload-artifact@v1
       with:
