@@ -32,4 +32,10 @@ jobs:
           npm run test:coverage
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
+      - name: Serverless Package 🚀
+        uses: aaronpanch/action-serverless@v1.0.0
+        with:
+          args: package
+        env: 
+          SERVICE_ROOT: flavours/nodejs/functionapp
       - uses: actions/checkout@v1
