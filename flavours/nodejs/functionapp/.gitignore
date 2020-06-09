@@ -46,3 +46,5 @@ __pycache__/
 libfreetype.so.6
 
 .nyc_output
+
+.serverless

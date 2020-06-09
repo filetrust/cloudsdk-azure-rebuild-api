@@ -1,22 +1,26 @@
 {
-  "name": "rebuild-nodejs-function-app",
+  "name": "rebuild-nodejs",
   "version": "1.0.0",
   "description": "",
   "scripts": {
     "build": "tsc && npm run copy:windows",
     "watch": "tsc -w",
     "prestart": "npm run build",
-    "start": "func start",
-    "test": "mocha -r ts-node/register 'rebuild-v1/**/*.tests.ts'",
+    "start": "func host start",
+    "test": "mocha -r ts-node/register 'src/**/*.tests.ts'",
     "test:watch": "mocha -r ts-node/register ./**/*.tests.ts --watch --watch-files ./**/*.tests.ts",
     "test:coverage": "nyc npm run test",
     "copy:windows": "cpx ../../../lib/windows/SDK/glasswall.classic.dll ./dist/lib/windows/SDK/ -u"
   },
+  "keywords": [
+    "azure",
+    "serverless"
+  ],
   "dependencies": {
-    "@azure/functions": "^1.0.2-beta2",
+    "@azure/functions": "^1.0.3",
     "@azure/storage-blob": "^12.1.1",
     "@types/async": "^3.2.0",
-    "@types/node": "^12.12.31",
+    "@types/node": "^13.1.8",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
     "applicationinsights": "^1.7.5",
@@ -43,8 +47,9 @@
     "ref-array-napi": "^1.2.1",
     "ref-napi": "^2.0.1",
     "ref-wchar-napi": "^1.0.2",
-    "sinon": "^9.0.2",
-    "typescript": "^3.3.3"
+    "serverless-azure-functions": "^2.0.9",
+    "serverless-offline": "^6.4.0",
+    "sinon": "^9.0.2"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
@@ -61,7 +66,9 @@
     "eslint-plugin-react": "^7.19.0",
     "mocha": "^7.2.0",
     "nyc": "^15.1.0",
+    "serverless-plugin-typescript": "^1.1.9",
     "source-map-support": "^0.5.19",
-    "ts-node": "^8.10.2"
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.5"
   }
 }
