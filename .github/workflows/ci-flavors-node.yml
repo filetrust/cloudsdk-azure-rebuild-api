@@ -21,10 +21,12 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
     - name: Serverless Package 🚀
+      working-directory: flavours/nodejs/functionapp
       uses: aaronpanch/action-serverless@v1.0.0
       with:
         args: package
     - name: Upload package 📦
+      working-directory: flavours/nodejs/functionapp
       uses: actions/upload-artifact@v1
       with:
         name: Rebuild
@@ -40,6 +42,7 @@ jobs:
         submodules: true
         token: ${{ secrets.TOKEN_GITHUB }}
     - name: Download package 📦
+      working-directory: flavours/nodejs/functionapp
       uses: actions/download-artifact@v1
       with:
         path: .serverless/rebuild-node.zip
