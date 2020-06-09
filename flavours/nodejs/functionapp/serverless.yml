@@ -8,7 +8,7 @@ provider:
   runtime: nodejs12
   type: premium
   functionApp:
-    name: rebuild-node
+    name: rebuild-node-win
     sku:
       name: B1
       tier: Basic
