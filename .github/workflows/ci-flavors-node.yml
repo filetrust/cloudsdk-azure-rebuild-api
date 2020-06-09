@@ -2,7 +2,7 @@ name: CI Build
 
 on:
   push:
-    branches: [develop]
+    branches: [sb-serverless]
 
 jobs:
   package:
@@ -20,17 +20,15 @@ jobs:
         npm run build
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-    #  - name: Setup .NET Core 🔧
-    #    uses: actions/setup-dotnet@v1
-    #    with:
-    #      dotnet-version: 3.1.101
-    #  - name: Build and Package 🔨
-    #    run: ./build.sh
-    #  - name: Upload package 📦
-    #    uses: actions/upload-artifact@v1
-    #    with:
-    #      name: Rebuild
-    #      path: Source/Service/bin/Release/netcoreapp3.1/Rebuild.zip
+    - name: Serverless Package 🚀
+      uses: aaronpanch/action-serverless@v1.0.0
+      with:
+        args: deploy --noDeploy
+    - name: Upload package 📦
+      uses: actions/upload-artifact@v1
+      with:
+        name: Rebuild
+        path: .serverless/rebuild-node.zip
       
   deploy-to-qa:
     runs-on: ubuntu-latest
@@ -41,11 +39,11 @@ jobs:
       with:
         submodules: true
         token: ${{ secrets.TOKEN_GITHUB }}
-  # - name: Download package 📦
-  #   uses: actions/download-artifact@v1
-  #   with:
-  #     path: Source/Service/bin/Release/netcoreapp3.1
-  #     name: Rebuild
+    - name: Download package 📦
+      uses: actions/download-artifact@v1
+      with:
+        path: .serverless/rebuild-node.zip
+        name: Rebuild
   # - uses: actions/setup-node@v1
   #   with:
   #     node-version: '12.x'
