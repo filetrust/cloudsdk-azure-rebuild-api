@@ -4,10 +4,6 @@ on:
   push:
     branches: [sb-serverless]
 
-defaults:
-  run:
-    working-directory: flavours/nodejs/functionapp
-
 jobs:
   package:
     runs-on: ubuntu-latest
@@ -21,12 +17,13 @@ jobs:
       run: |
         npm install
         npm run build
+      working-directory: flavours/nodejs/functionapp
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
     - name: Serverless Package 🚀
       uses: aaronpanch/action-serverless@v1.0.0
       with:
-        args: package
+        args: package -p flavours/nodejs/functionapp
     - name: Upload package 📦
       uses: actions/upload-artifact@v1
       with:
