@@ -1,0 +1,105 @@
+service: rebuild-node
+
+frameworkVersion: '>=1.0.0 <2.0.0'
+
+provider:
+  name: azure
+  region: UK South
+  runtime: nodejs12
+  type: premium
+  functionApp:
+    name: rebuild-node-win
+    sku:
+      name: B1
+      tier: Basic
+  appServicePlan: 
+    name: RebuildPlan
+    sku:
+      name: B1
+      tier: Basic
+  environment:
+    # WEBSITE_NODE_DEFAULT_VERSION: ~12
+    # FUNCTIONS_EXTENSION_VERSION: ~3
+
+plugins: 
+  - serverless-azure-functions
+
+package:
+  exclude:
+    - src/**
+    - .nyc_output/**
+    - .vscode/**
+    - .dist/**/*.tests.js
+    - .dist/**/*.tests.js.map
+    - .eslintignore
+    - .eslintrc.js
+    - .nycrc.json
+    - local.settings.json
+    - .gitignore
+    - tsconfig.json
+
+functions:
+  rebuild-url-v1:
+    handler: dist/src/index
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel: function
+          name: req
+          dataType: binary
+          methods:
+            - post
+          route: "v1/rebuild/url"
+      - http: true
+        x-azure-settings:
+          direction: out
+          dataType: binary
+          name: $return
+  rebuild-file-v1:
+    handler: dist/src/index
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel: function
+          name: req
+          dataType: binary
+          methods:
+            - post
+          route: "v1/rebuild/file"
+      - http: true
+        x-azure-settings:
+          direction: out
+          dataType: binary
+          name: $return
+  rebuild-base64-v1:
+    handler: dist/src/index
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel: function
+          name: req
+          dataType: binary
+          methods:
+            - post
+          route: "v1/rebuild/base64"
+      - http: true
+        x-azure-settings:
+          direction: out
+          dataType: binary
+          name: $return
+  health-v1:
+    handler: dist/src/index
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel: function
+          name: req
+          dataType: binary
+          methods:
+            - get
+          route: "v1/health"
+      - http: true
+        x-azure-settings:
+          direction: out
+          dataType: binary
+          name: $return
