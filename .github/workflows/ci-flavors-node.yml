@@ -54,7 +54,7 @@ jobs:
     - name: Deploy Package 🚀
       uses: aaronpanch/action-serverless@v1.0.0
       with:
-        args: deploy -p ".serverless/rebuild-node.zip" --stage QA --region UK-South --resourceGroup Rebuild-Node-Win-QA --subscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+        args: deploy -p ".serverless/rebuild-node.zip" --stage QA --region UK-South --resourceGroup gw-uks-win-rebuild-qa --subscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
       env: 
         SERVICE_ROOT: flavours/nodejs/functionapp
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
