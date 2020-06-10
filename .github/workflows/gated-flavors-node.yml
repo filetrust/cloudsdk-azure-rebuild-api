@@ -1,0 +1,41 @@
+name: Gated Node Build For Rebuild Api
+
+on:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-16.04
+
+    strategy:
+      matrix:
+        node-version: [12.x]  
+        
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2 
+        with:
+          submodules: true
+          token: ${{ secrets.TOKEN_GITHUB }}
+      - name: Build
+        working-directory: flavours/nodejs/functionapp
+        run: |
+          npm install
+          npm run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+      - name: Unit tests
+        working-directory: flavours/nodejs/functionapp
+        run: |
+          npm run test:coverage
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+      - name: Serverless Package 🚀
+        uses: aaronpanch/action-serverless@v1.0.0
+        with:
+          args: package
+        env: 
+          SERVICE_ROOT: flavours/nodejs/functionapp
+      - uses: actions/checkout@v1
