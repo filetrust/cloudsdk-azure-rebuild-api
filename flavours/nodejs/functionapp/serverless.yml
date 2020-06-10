@@ -6,7 +6,7 @@ provider:
   name: azure
   region: UK South
   runtime: nodejs12
-  type: Basic
+  type: premium
   functionApp:
     sku:
       name: B1
