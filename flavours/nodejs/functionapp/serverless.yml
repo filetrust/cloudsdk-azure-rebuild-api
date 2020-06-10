@@ -7,6 +7,8 @@ provider:
   region: UK South
   runtime: nodejs12
   type: premium
+  tags:
+    env: ${opt:stage}  
   functionApp:
     sku:
       name: B1
