@@ -127,14 +127,14 @@ paths:
                   type: string
                   format: binary
                   description: The binary contents of the selected file will be uploaded to the server. The Total supported request size of the Azure Function is 100MB, therefore the file contents must also be less than 100MB.
-                contentManagementFlagJson:
+                ContentManagementFlags:
                   $ref: '#/Models/ContentManagementPolicy'
               required:
                 - file
             encoding:
               file:
                 style: form
-              contentManagementFlagJson:
+              ContentManagementFlags:
                 contentType: application/json
                 style: form
       responses:
