@@ -8,7 +8,10 @@ provider:
   runtime: nodejs12
   type: premium
   tags:
-    env: ${opt:stage}  
+    env: ${opt:stage}
+    product: rebuild
+    platform: windows-x64
+    runtime: nodejs12
   functionApp:
     sku:
       name: B1
