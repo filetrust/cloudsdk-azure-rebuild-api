@@ -8,7 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const BYTES_PER_MB = 1e6;
-const UPLOAD_SIZE_LIMIT = 6 * BYTES_PER_MB;
+const UPLOAD_SIZE_LIMIT = 100 * BYTES_PER_MB;
 
 let yam = require("./api.yaml");
 
@@ -27,7 +27,7 @@ const SwaggerPage = () => {
                 }
 
                 if (target.files[0].size > UPLOAD_SIZE_LIMIT) {
-                    toast.error("The maximum supported request size is 6MB. Please select a smaller file.");
+                    toast.error("The maximum supported request size is " + UPLOAD_SIZE_LIMIT.toString() + "MB. Please select a smaller file.");
                     target.value = "";
                     return;
                 }
