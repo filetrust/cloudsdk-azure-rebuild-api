@@ -1,6 +1,5 @@
 
 node_modules
-package-lock.json
 .vscode
 flavours/nodejs/functionapp/health-v1/function.json
 flavours/nodejs/functionapp/rebuild-base64-v1/function.json
