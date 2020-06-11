@@ -12,6 +12,7 @@ provider:
     product: rebuild
     platform: windows-x64
     runtime: nodejs12
+    datadog: monitored
   functionApp:
     sku:
       name: B1
