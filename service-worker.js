@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/cloudsdk-azure-rebuild-api/precache-manifest.769e4461b08eede4405cfb875ff0824c.js"
+  "/cloudsdk-azure-rebuild-api/precache-manifest.cf8359784d2724a7c786466dd023a60c.js"
 );
 
 self.addEventListener('message', (event) => {
