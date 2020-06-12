@@ -1,1 +1,0 @@
-nodeProcessCommandLine: "D:\Program Files\nodejs\12.15.0\node.exe" --nouse-idle-notification --expose-gc --max-old-space-size=1024
