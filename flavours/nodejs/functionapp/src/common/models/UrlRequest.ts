@@ -4,6 +4,7 @@ import RequestModelBase from "./RequestModelBase";
 export default class UrlRequest extends RequestModelBase {
     InputGetUrl: string;
     OutputPutUrl: string;
+    OutputPutUrlRequestHeaders: { [header: string]: string }
 
     constructor(payload: any) {
         super();
@@ -27,6 +28,7 @@ export default class UrlRequest extends RequestModelBase {
 
         this.InputGetUrl = payload.InputGetUrl;
         this.OutputPutUrl = payload.OutputPutUrl;
+        this.OutputPutUrlRequestHeaders = payload.OutputPutUrlRequestHeaders;
         this.loadCmp(payload.ContentManagementFlags);
     }
 }
