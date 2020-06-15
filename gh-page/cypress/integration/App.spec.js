@@ -8,10 +8,6 @@ describe("Swagger Page", () => {
         beforeEach(() => {
             cy.visit("/#/");
         });
-
-        it("title is correct", () => {
-            cy.get("h2.title").contains("Glasswall File Rebuild Product API");
-        });
     
         it("Renders each endpoint", () => {
             cy.get(".opblock").should("have.lengthOf", "3")

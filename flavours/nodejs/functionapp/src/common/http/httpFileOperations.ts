@@ -13,10 +13,11 @@ export default class HttpFileOperations {
         return response.buffer();
     };
 
-    static uploadFile = async (fileUrl: string, buf: Buffer): Promise<string> => {
+    static uploadFile = async (fileUrl: string, headers: { [header: string]: string }, buf: Buffer): Promise<string> => {
         const response = await fetch(fileUrl, {
             method: "PUT",
-            body: buf
+            body: buf,
+            headers
         });
 
         if (!response.ok) {
