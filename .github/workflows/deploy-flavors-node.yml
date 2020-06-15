@@ -80,7 +80,7 @@ jobs:
    
   deploy-to-prod-1:
     runs-on: ubuntu-latest
-    needs: [package]
+    needs: [end-to-end-test]
     steps:
     - name: Checkout 🛎️
       uses: actions/checkout@v2
