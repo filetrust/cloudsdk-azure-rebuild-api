@@ -97,7 +97,7 @@ class RebuildUrlWorkflow extends RebuildWorkflowBase {
         let etag: string;
 
         try {
-            etag = await HttpFileOperations.uploadFile(payload.OutputPutUrl, protectedFile);
+            etag = await HttpFileOperations.uploadFile(payload.OutputPutUrl, payload.OutputPutUrlRequestHeaders, protectedFile);
             this.Response.headers[Metric.UploadEtag] = etag;
             this.Response.headers[Metric.UploadTime] = timer.Elapsed();
             this.Response.headers[Metric.UploadSize] = protectedFile.length;

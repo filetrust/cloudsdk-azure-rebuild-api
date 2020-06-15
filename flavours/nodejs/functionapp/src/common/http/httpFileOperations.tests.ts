@@ -86,6 +86,10 @@ describe("HttpFileOperations", () => {
         describe("when status is not OK", () => {
             const inputUrl = "www.glasswall.com";
             const inputFile = Buffer.from("test");
+            const inputHeaders = {
+                "My Header": "My Value"
+            };
+
             let error: any;
 
             beforeEach(async () => {
@@ -97,7 +101,7 @@ describe("HttpFileOperations", () => {
                 fetchStub = stub(fetch, "default").returns(fetchStubResult);
 
                 try {
-                    await HttpFileOperations.uploadFile(inputUrl, inputFile);
+                    await HttpFileOperations.uploadFile(inputUrl, inputHeaders, inputFile);
                 }
                 catch (err) {
                     error = err;
@@ -125,6 +129,9 @@ describe("HttpFileOperations", () => {
         describe("when status is OK with etag", () => {
             const inputUrl = "www.glasswall.com";
             const inputBuffer = Buffer.from("test");
+            const inputHeaders = {
+                "My Header": "My Value"
+            };
             const expectedEtag = "\"ETAG\"";
             let actualEtag: string;
 
@@ -144,7 +151,7 @@ describe("HttpFileOperations", () => {
                 };
 
                 fetchStub = stub(fetch, "default").returns(fetchStubResult);
-                actualEtag = await HttpFileOperations.uploadFile(inputUrl, inputBuffer);
+                actualEtag = await HttpFileOperations.uploadFile(inputUrl, inputHeaders, inputBuffer);
             });
 
             afterEach(() => {
@@ -168,6 +175,9 @@ describe("HttpFileOperations", () => {
     describe("when status is OK with no etag", () => {
         const inputUrl = "www.glasswall.com";
         const inputBuffer = Buffer.from("test");
+        const inputHeaders = {
+            "My Header": "My Value"
+        };
         let actualEtag: string;
 
         beforeEach(async () => {
@@ -186,7 +196,7 @@ describe("HttpFileOperations", () => {
             };
 
             fetchStub = stub(fetch, "default").returns(fetchStubResult);
-            actualEtag = await HttpFileOperations.uploadFile(inputUrl, inputBuffer);
+            actualEtag = await HttpFileOperations.uploadFile(inputUrl, inputHeaders, inputBuffer);
         });
 
         afterEach(() => {
