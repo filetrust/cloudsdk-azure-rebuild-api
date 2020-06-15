@@ -78,33 +78,33 @@ jobs:
         run: echo Tests placeholder
         #run: s93_test_automation --product "rebuild" --endpoint "${{ secrets.STAGE_API_ENDPOINT }}" --api_key "${{ secrets.STAGE_API_KEY }}" 
    
-  #deploy-to-prod-1:
-  #  runs-on: ubuntu-latest
-  #  needs: [package]
-  #  steps:
-  #  - name: Checkout 🛎️
-  #    uses: actions/checkout@v2
-  #    with:
-  #      submodules: true
-  #      token: ${{ secrets.TOKEN_GITHUB }}
-  #  - name: Download package 📦
-  #    uses: actions/download-artifact@v1
-  #    with:
-  #      path: flavours/nodejs/functionapp/.serverless
-  #      name: RebuildNodeJs
-  #  - name: Install npm packages
-  #    run: npm install
-  #    working-directory: flavours/nodejs/functionapp
-  #    env:
-  #      GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-  #  - name: Deploy Package 🚀
-  #    uses: aaronpanch/action-serverless@v1.0.0
-  #    with:
-  #      args: deploy -p ".serverless/rebuild-node.zip" --stage PROD --region UK-South --resourceGroup Rebuild-Node-Win-Stage --subscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-  #    env: 
-  #      SERVICE_ROOT: flavours/nodejs/functionapp
-  #      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_PROD1_SUBSCRIPTION_ID }}
-  #      AZURE_TENANT_ID: ${{ secrets.AZURE_PROD1_TENANT_ID }}
-  #      AZURE_CLIENT_ID: ${{ secrets.AZURE_PROD1_CLIENT_ID }}
-  #      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_PROD1_CLIENT_SECRET }}
+  deploy-to-prod-1:
+    runs-on: ubuntu-latest
+    needs: [package]
+    steps:
+    - name: Checkout 🛎️
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+        token: ${{ secrets.TOKEN_GITHUB }}
+    - name: Download package 📦
+      uses: actions/download-artifact@v1
+      with:
+        path: flavours/nodejs/functionapp/.serverless
+        name: RebuildNodeJs
+    - name: Install npm packages
+      run: npm install
+      working-directory: flavours/nodejs/functionapp
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+    - name: Deploy Package 🚀
+      uses: aaronpanch/action-serverless@v1.0.0
+      with:
+        args: deploy -p ".serverless/rebuild-node.zip" --stage PROD --region UK-South --resourceGroup gw-uks-win-rebuild-prod --subscriptionId "${{ secrets.AZURE_PROD1_SUBSCRIPTION_ID }}"
+      env: 
+        SERVICE_ROOT: flavours/nodejs/functionapp
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_PROD1_SUBSCRIPTION_ID }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_PROD1_TENANT_ID }}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_PROD1_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_PROD1_CLIENT_SECRET }}
        
