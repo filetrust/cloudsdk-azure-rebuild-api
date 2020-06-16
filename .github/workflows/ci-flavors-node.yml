@@ -73,10 +73,9 @@ jobs:
       - name: Install dependencies 🔧
         run: |
           python -m pip install --upgrade pip
-          pip install glasswall-aws-product-test-automation
+          pip install glasswall-azure-product-test-automation
       - name: Run Tests 🧪
-        run: echo tests placeholder
-        #run: s93_test_automation --product "rebuild" --endpoint "${{ secrets.QA_API_ENDPOINT }}" --api_key "${{ secrets.QA_API_KEY }}" 
+        run: p43_test_automation --product "rebuild" --endpoint "${{ secrets.QA_API_ENDPOINT }}" --api_key "${{ secrets.QA_API_KEY }}" --url_api_key "${{ secrets.QA_URL_API_KEY }}"
         
   merge-to-master:
     runs-on: ubuntu-latest
