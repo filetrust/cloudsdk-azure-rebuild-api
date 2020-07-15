@@ -1,5 +1,4 @@
 import Busboy = require("busboy");
-import { reject } from "async";
 
 export type multipart = {
     data: Buffer | string;
