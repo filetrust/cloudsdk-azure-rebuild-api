@@ -7,11 +7,7 @@ describe("Swagger Page", () => {
     describe("layout", () => {
         beforeEach(() => {
             cy.visit("/#/");
-        });
-    
-        it("Renders each endpoint", () => {
-            cy.get(".opblock").should("have.lengthOf", "3")
-        });
+        });    
     });
     
     describe("url to url endpoint", () => {
