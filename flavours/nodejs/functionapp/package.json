@@ -26,7 +26,8 @@
     "moment-duration-format": "^2.3.2",
     "node-fetch": "^2.6.0",
     "object-to-xml": "^2.0.0",
-    "ref-napi": "^2.0.1"
+    "ref-napi": "^2.0.1",
+    "content-disposition": "^0.5.3"
   },
   "devDependencies": {
     "@azure/functions": "^1.0.3",
@@ -62,7 +63,6 @@
     "sinon": "^9.0.2",
     "serverless-plugin-typescript": "^1.1.9",
     "serverless-azure-functions": "^2.0.9",
-    "serverless-offline": "^6.4.0",
-    "content-disposition": "^0.5.3"
+    "serverless-offline": "^6.4.0"
   }
 }
