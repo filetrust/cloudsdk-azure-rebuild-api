@@ -8,5 +8,8 @@
     "strict": false,
     "listFiles": true,
     "allowJs": true
-  }
+  },
+  "exclude": [
+    "**/*.tests.ts"
+  ]
 }
