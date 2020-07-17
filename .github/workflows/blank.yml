@@ -16,4 +16,4 @@ jobs:
         with:
           ref: develop
       - run: |
-          ls
+          git branch --show-current
