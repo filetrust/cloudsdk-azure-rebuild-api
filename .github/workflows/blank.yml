@@ -1,0 +1,19 @@
+name: SAST Scan
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  sast-testing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: develop
+        run: |
+          ls
