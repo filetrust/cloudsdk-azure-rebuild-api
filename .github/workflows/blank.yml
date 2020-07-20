@@ -20,3 +20,8 @@ jobs:
          npm install
          npm run build
         working-directory: flavours/nodejs/functionapp
+      - name : SaSt Testing
+        run: |
+          sudo pip3 install --upgrade njsscan
+          njjscan .
+         
