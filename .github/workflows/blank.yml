@@ -24,5 +24,5 @@ jobs:
         run: |
           sudo apt-get install python3-setuptools
           sudo pip3 install --upgrade njsscan
-          njjscan .
+          njsscan .
          
