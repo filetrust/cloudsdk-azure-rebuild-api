@@ -1,20 +1,20 @@
 {
   "files": {
     "main.css": "/cloudsdk-azure-rebuild-api/static/css/main.24755e4c.chunk.css",
-    "main.js": "/cloudsdk-azure-rebuild-api/static/js/main.9171ea11.chunk.js",
-    "main.js.map": "/cloudsdk-azure-rebuild-api/static/js/main.9171ea11.chunk.js.map",
+    "main.js": "/cloudsdk-azure-rebuild-api/static/js/main.b851bea3.chunk.js",
+    "main.js.map": "/cloudsdk-azure-rebuild-api/static/js/main.b851bea3.chunk.js.map",
     "runtime-main.js": "/cloudsdk-azure-rebuild-api/static/js/runtime-main.19b3eff9.js",
     "runtime-main.js.map": "/cloudsdk-azure-rebuild-api/static/js/runtime-main.19b3eff9.js.map",
     "static/css/2.ecb7c289.chunk.css": "/cloudsdk-azure-rebuild-api/static/css/2.ecb7c289.chunk.css",
     "static/js/2.9e3644e6.chunk.js": "/cloudsdk-azure-rebuild-api/static/js/2.9e3644e6.chunk.js",
     "static/js/2.9e3644e6.chunk.js.map": "/cloudsdk-azure-rebuild-api/static/js/2.9e3644e6.chunk.js.map",
     "index.html": "/cloudsdk-azure-rebuild-api/index.html",
-    "precache-manifest.afa8444de8acb4e7bff11d5b48603f70.js": "/cloudsdk-azure-rebuild-api/precache-manifest.afa8444de8acb4e7bff11d5b48603f70.js",
+    "precache-manifest.ec35ea4adb73999eaf2c1b0cca9683c4.js": "/cloudsdk-azure-rebuild-api/precache-manifest.ec35ea4adb73999eaf2c1b0cca9683c4.js",
     "service-worker.js": "/cloudsdk-azure-rebuild-api/service-worker.js",
     "static/css/2.ecb7c289.chunk.css.map": "/cloudsdk-azure-rebuild-api/static/css/2.ecb7c289.chunk.css.map",
     "static/css/main.24755e4c.chunk.css.map": "/cloudsdk-azure-rebuild-api/static/css/main.24755e4c.chunk.css.map",
     "static/js/2.9e3644e6.chunk.js.LICENSE.txt": "/cloudsdk-azure-rebuild-api/static/js/2.9e3644e6.chunk.js.LICENSE.txt",
-    "static/media/api.yaml": "/cloudsdk-azure-rebuild-api/static/media/api.61b7636a.yaml",
+    "static/media/api.yaml": "/cloudsdk-azure-rebuild-api/static/media/api.745620ce.yaml",
     "static/media/App.css": "/cloudsdk-azure-rebuild-api/static/media/roboto-regular-webfont.d96d07c1.woff2",
     "static/media/logo.svg": "/cloudsdk-azure-rebuild-api/static/media/logo.6c8e5727.svg"
   },
@@ -23,6 +23,6 @@
     "static/css/2.ecb7c289.chunk.css",
     "static/js/2.9e3644e6.chunk.js",
     "static/css/main.24755e4c.chunk.css",
-    "static/js/main.9171ea11.chunk.js"
+    "static/js/main.b851bea3.chunk.js"
   ]
 }

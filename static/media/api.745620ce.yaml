@@ -1,0 +1,576 @@
+openapi: 3.0.0
+info:
+  title: Glasswall File Rebuild Product API
+  description: These are HTTP endpoints that rebuild files with the Glasswall d-FIRST™ Engine.
+  version: 0.1.9
+servers:
+  - url: https://sls-uks-dev-rebuild-node.azurewebsites.net
+    description: Dev
+  - url: https://sls-uks-qa-rebuild-node.azurewebsites.net
+    description: QA
+  - url: https://sls-uks-sta-rebuild-node.azurewebsites.net
+    description: Stage
+paths:
+  /api/v1/Rebuild/url?code={code}:
+    post:
+      summary: Rebuilds a file located at a specified URL and outputs the rebuilt file to another specified URL
+      description: This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine. The request body contains the Base64 representation of the file and Glasswall Content Management Flags with a 'Content-Type' of 'application/json'. A Base64 Representation of the rebuilt file is then returned in the response with a 'Content-Type' of 'text/plain'.
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              required:
+                - InputGetUrl
+                - OutputPutUrl
+              properties:
+                InputGetUrl:
+                  type: string
+                  description: This URL will be used in a HTTP GET operation to download the file to be rebuilt
+                OutputPutUrl:
+                  type: string
+                  description: This URL will be used upon successful rebuilding of a file in a HTTP PUT operation. The ETAG of the PUT file will be returned in the headers (See responses)
+                OutputPutUrlRequestHeaders:
+                  type: object
+                  description: This JSON object contains header values that will be added to the request made to parameter 'OutputPutUrl'. The keys are the name of the header, the value of the property maps to the value of the header sent.
+                  example:
+                    x-ms-blob-type: BlockBlob
+                ContentManagementFlags:
+                  $ref: '#/Models/ContentManagementPolicy'
+            encoding:
+              file:
+                style: form
+      responses:
+        200:    # status code
+          description: OK - The requested file was successfully processed by the Glasswall d-FIRST™ Engine
+          headers:
+            gw-metric-detect:
+              description: A header containing the time it took to detect the file type.
+              schema:
+                type: string
+            gw-metric-filesize:
+              description: A header containing a record of the size of the file uploaded
+              schema:
+                type: string
+            gw-version:
+              description: A header containing the version of the Glasswall d-FIRST™ Engine installed on the server
+              schema:
+                type: string
+            gw-metric-rebuild:
+              description: A header containing the time it took to rebuild the input file.
+              schema:
+                type: string
+            gw-metric-download:
+              description: A header containing the time it took to download the input file
+              schema:
+                type: string
+            gw-metric-upload:
+              description: A header containing the time it took to upload the rebuilt file
+              schema:
+                type: string
+            gw-metric-uploadsize:
+              description: A header containing the size of the rebuilt file
+              schema:
+                type: string
+            gw-put-file-etag:
+              description: A header containing the etag of the output file. 
+              schema:
+                type: string
+        400:
+          description: Bad Request - This is usually when the JSON input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  InputGetUrl:
+                    type: array
+                    description: "Error relating to the input"
+                    items:
+                      type: string
+                  OutputPutUrl:
+                    type: array
+                    description: "Error relating to the input"
+                    items:
+                      type: string
+        403:
+          $ref: '#/responses/Forbidden' 
+        415:
+          $ref: '#/responses/UnsupportedMediaType' 
+        422:
+          $ref: '#/responses/UnprocessableEntity' 
+  /api/v1/Rebuild/file?code={code}:
+    post:
+      summary: Rebuilds a file using its binary data
+      description: <h3>Description:</h3>This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine.  Both the file and the Content Management Policy are sent in the request body with a 'Content-Type' of 'multipart/form-data'. The Rebuilt file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: Accept
+          description: A value of 'application/octet-stream' will return the rebuilt file's binary content to the client. If this is not set then the file's Base64 representation will be returned instead.
+          schema:
+            type: string
+            default: application/octet-stream
+          required: false
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The binary contents of the selected file will be uploaded to the server. The Total supported request size of the Azure Function is 100MB, therefore the file contents must also be less than 100MB.
+                ContentManagementFlags:
+                  $ref: '#/Models/ContentManagementPolicy'
+              required:
+                - file
+            encoding:
+              file:
+                style: form
+              ContentManagementFlags:
+                contentType: application/json
+                style: form
+      responses:
+        200:    # status code
+          description: OK - The requested file was processed by the Glasswall d-FIRST™ Engine
+          content: 
+            application/octet-stream:
+              schema:
+                format: binary
+                description: The body is a binary stream, containing the rebuilt file
+            application/json:
+              schema:
+                description: This is returned when the request was successful but the content management policy has is set to disallow content found in the file.
+                type: object
+                properties:
+                  IsDisallowed:
+                    type: boolean
+                    description: A value indicating whether the file was disallowed by the Content Management Policy
+                  ErrorMessage:
+                    type: string
+                    description: A description of the reason the file was not protected.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename=ExampleFileName.pdf; filename*=UTF-8''ExampleFileName.pdf
+              description: This contains the details of the rebuilt files binary data to download
+            gw-metric-detect:
+              description: A header containing the time it took to detect the file type.
+              schema:
+                type: string
+            gw-metric-filesize:
+              description: A header containing a record of the size of the file uploaded
+              schema:
+                type: string
+            gw-version:
+              description: A header containing the version of the Glasswall d-FIRST™ Engine installed on the server
+              schema:
+                type: string
+            gw-metric-rebuild:
+              description: A header containing the time it took to rebuild the input file.
+              schema:
+                type: string
+            gw-metric-formfileread:
+              description: A header containing the time it took to read the file uploaded
+              schema:
+                type: string
+        400:
+          description: Bad Request - This is usually when the JSON input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  file:
+                    type: array
+                    description: "Error relating to the input file"
+                    items:
+                      type: string
+        403:
+          $ref: '#/responses/Forbidden' 
+        415:
+          $ref: '#/responses/UnsupportedMediaType' 
+        422:
+          $ref: '#/responses/UnprocessableEntity' 
+          description: This occurs when the request was understood, but the file requested could not be rebuilt by the engine. The response body contains the reason.
+  /api/v1/Rebuild/base64?code={code}:
+    post:
+      summary: Rebuilds a file using the Base64 encoded representation
+      description: >
+        This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine.
+        The request body contains the Base64 representation of the file and Glasswall Content Management Flags with a 'Content-Type' of 'application/json'. 
+        A Base64 Representation of the rebuilt file is then returned in the response with a 'Content-Type' of 'text/plain'.
+        <br/><br/>
+        Select a file below to copy its Base64 Encoded representation to clipboard. The Total supported request size of the Azure Function is 100MB, therefore the base64 encoded string must also be less than 100MB.
+        <br/><br/>
+        <span><input id="base64Input" type="file"></input> 
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              required:
+                - Base64
+              properties:
+                Base64:
+                  type: string
+                  description: This is the Base64 encoded representation of the file to rebuild. 
+                ContentManagementFlags:
+                  $ref: '#/Models/ContentManagementPolicy'
+            encoding:
+              Base64:
+                style: form
+      responses:
+        200:    # status code
+          description: OK - The requested Base64 was successfully decoded and processed by the Glasswall d-FIRST™ Engine
+          content: 
+            application/json:
+              schema:
+                description: The body is a rebuilt file, Base64 encoded.
+                type: object
+                properties:
+                  Base64: 
+                    type: string
+                    example: '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...'
+          headers:
+            gw-metric-detect:
+              description: A header containing the time it took to detect the file type.
+              schema:
+                type: string
+            gw-metric-filesize:
+              description: A header containing a record of the size of the file uploaded
+              schema:
+                type: string
+            gw-version:
+              description: A header containing the version of the Glasswall d-FIRST™ Engine installed on the server
+              schema:
+                type: string
+            gw-metric-rebuild:
+              description: A header containing the time it took to rebuild the input file.
+              schema:
+                type: string
+            gw-metric-decode-base64:
+              description: A header containing the time it took to read decode the Base64 string
+              schema:
+                type: string
+        400:
+          description: Bad Request - This is usually when the JSON input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Base64:
+                    type: array
+                    description: "Error relating to the input"
+                    items:
+                      type: string
+        403:
+          $ref: '#/responses/Forbidden' 
+        415:
+          $ref: '#/responses/UnsupportedMediaType' 
+        422:
+          $ref: '#/responses/UnprocessableEntity' 
+responses:
+  Forbidden:
+    description: Forbidden - This typically occurs when the code is not supplied, or it is incorrect.
+    content:
+      "application/json":
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+  UnsupportedMediaType:
+    description: Unsupported Media Type - This happens when the request was not sent in JSON.
+  UnprocessableEntity:
+    description: Unprocessable Entity - This occurs when the Glasswall Engine was unable to rebuild the file due to an unsupported file type or if it is non conforming.
+Models:
+  ContentManagementPolicy:
+    type: object
+    description: >
+      This field contains each of the Content Management Flags for the file types that the engine supports. The server treats this field as a JSON string. All the properties including the field itself are optional. 
+              <br/><br/> Content Management Flag Key:
+              <br/><br/> `0` - Allow
+              <br/><br/> `1` - Sanitise (Default)
+              <br/><br/> `2` - Disallow
+    properties: 
+      PdfContentManagement:
+        type: object
+        properties:
+          Metadata:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for PDF Metadata, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          InternalHyperlinks:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for PDF Interal Hyperlinks, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          ExternalHyperlinks:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for PDF External Hyperlinks, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          EmbeddedFiles:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for files Embedded in PDF, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          EmbeddedImages:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for PDF Embedded Images, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          Javascript:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for PDF Javascript code, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          Acroform:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for PDF Acroforms, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          ActionsAll:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for PDF Actions, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+      ExcelContentManagement:
+        type: object
+        properties:
+          Metadata:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Excel Metadata, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          InternalHyperlinks:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Excel Internal Hyperlinks, valid values:
+              * `0` - Allow
+              * `1` - Sanitise (Default)
+              * `2` - Disallow
+          ExternalHyperlinks:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Excel External Hyperlinks, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          EmbeddedFiles:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for files Embedded in Excel documents, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          EmbeddedImages:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for images Embedded in Excel documents, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          DynamicDataExchange:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Excel Dynamic Data, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          Macros:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Excel Macros, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          ReviewComments:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Excel Review Comments, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+      PowerPointContentManagement:
+        type: object
+        properties:
+          Metadata:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Powerpoint Metadata, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          InternalHyperlinks:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Powerpoint Internal Hyperlinks, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          ExternalHyperlinks:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Powerpoint External Hyperlinks, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          EmbeddedFiles:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Powerpoint Embedded Files, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          EmbeddedImages:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Powerpoint Embedded Images, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          Macros:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Powerpoint Macros, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          ReviewComments:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Powerpoint Review Comments, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+      WordContentManagement:
+        type: object
+        properties:
+          Metadata:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Word Documents Metadata, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          InternalHyperlinks:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Word Documents Internal Hyperlinks, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          ExternalHyperlinks:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Word Documents External Hyperlinks, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          EmbeddedFiles:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Word Documents Embedded Files, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          EmbeddedImages:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Word Documents Embedded Images, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          DynamicDataExchange:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Word Documents Dynamic Data, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          Macros:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Word Documents Macros, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
+          ReviewComments:
+            type: integer
+            enum: [1, 0, 2]
+            description: >
+              Specifies the content action for Word Documents Review Comments, valid values:
+              <br/><br/>* `0` - Allow
+              <br/><br/>* `1` - Sanitise (Default)
+              <br/><br/>* `2` - Disallow
