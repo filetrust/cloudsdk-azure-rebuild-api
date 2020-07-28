@@ -36,6 +36,11 @@ paths:
                 OutputPutUrl:
                   type: string
                   description: This URL will be used upon successful rebuilding of a file in a HTTP PUT operation. The ETAG of the PUT file will be returned in the headers (See responses)
+                OutputPutUrlRequestHeaders:
+                  type: object
+                  description: This JSON object contains header values that will be added to the request made to parameter 'OutputPutUrl'. The keys are the name of the header, the value of the property maps to the value of the header sent.
+                  example:
+                    x-ms-blob-type: BlockBlob
                 ContentManagementFlags:
                   $ref: '#/Models/ContentManagementPolicy'
             encoding:
