@@ -60,6 +60,10 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     finally {
         runGc(context, response.headers);
     }
+    
+    response.headers["X-Content-Type-Options"] = "nosniff";
+    response.headers["Cache-Control"] = "no-cache";
+    response.headers["Pragma"] = "no-cache";
 
     return response;
 };
