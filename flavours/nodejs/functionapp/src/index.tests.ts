@@ -155,11 +155,14 @@ describe("httpTrigger", () => {
 
         it("returns correct headers", () => {
             expect(actualResponse.headers).not.to.be.equal(undefined).and.not.to.be.equal(null);
-            expect(Object.keys(actualResponse.headers).length).to.equal(5);
+            expect(Object.keys(actualResponse.headers).length).to.equal(8);
             expect(actualResponse.headers["testHeader"]).to.equal(expectedResponse.headers.testHeader);
             expect(actualResponse.headers["Access-Control-Expose-Headers"]).to.equal("*");
             expect(actualResponse.headers["Access-Control-Allow-Headers"]).to.equal("*");
             expect(actualResponse.headers["Access-Control-Allow-Origin"]).to.equal("*");
+            expect(actualResponse.headers["X-Content-Type-Options"]).to.equal("nosniff");
+            expect(actualResponse.headers["Cache-Control"]).to.equal("no-cache");
+            expect(actualResponse.headers["Pragma"]).to.equal("no-cache");
             expect(actualResponse.headers["GC-RAN"]).to.equal("false");
         });
     
