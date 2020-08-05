@@ -1,0 +1,36 @@
+name: Zap-scanning
+
+on:
+  push:
+    paths:
+      - 'postman-collection/**'
+
+  pull_request:
+    paths:
+      - 'postman-collection/**'
+
+jobs:
+  checkout-repo:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout 🛎️
+      uses: actions/checkout@v2
+    - name : checking for existing container
+      run : docker ps
+    - name: Installing Zap
+      run :  docker run  --rm -d -u zap -p 8080:8080 -i owasp/zap2docker-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config api.key=12345
+    - name: Installing newman
+      run: |
+        sudo npm install -g newman
+        sleep 10
+        docker ps
+        HTTP_PROXY=http://localhost:8080/ newman run postman.json -e enviroment.json --insecure
+      working-directory: postman-collection 
+    - name: Checking result
+      run: |
+       pip install --user requests 
+       sleep 20
+       python result.py
+       python exit_code.py
+       python result.py
+      working-directory: python-scripts
