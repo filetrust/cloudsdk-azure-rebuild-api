@@ -54,7 +54,7 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/runner/work/OWASP-ZAP-automation/OWASP-ZAP-automation/images/zap.png"
+									"src": "/home/runner/work/cloudsdk-azure-rebuild-api/cloudsdk-azure-rebuild-api/images/zap.png"
 								},
 								{
 									"key": "ContentManagementFlags",
