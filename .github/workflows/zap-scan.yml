@@ -19,6 +19,9 @@ jobs:
       run : docker ps
     - name: Installing Zap
       run :  docker run  --rm -d -u zap -p 8080:8080 -i owasp/zap2docker-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config api.key=12345
+    - name: Replacing Variables
+      run: sed -i 's/secret-key/${{ secrets.OWASP_ZAP_REBUILD_KEY }}/g' enviroment.json
+      working-directory: postman-collection
     - name: Installing newman
       run: |
         sudo npm install -g newman
