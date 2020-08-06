@@ -1,0 +1,24 @@
+{
+	"id": "7cdb04dc-de70-4b32-9856-838279a39d8b",
+	"name": "Rebuild Azure ",
+	"values": [
+		{
+			"key": "azure-stage-win-base-url",
+			"value": "https://sls-uks-sta-rebuild-node.azurewebsites.net",
+			"enabled": true
+		},
+		{
+			"key": "azure-stage-win-version",
+			"value": "v1",
+			"enabled": true
+		},
+		{
+			"key": "azure-stage-win-code",
+			"value": "secret-key",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2020-07-20T15:57:11.741Z",
+	"_postman_exported_using": "Postman/7.28.0"
+}

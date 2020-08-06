@@ -1,0 +1,36 @@
+name: SAST Scan
+on:
+  pull_request:
+   branches: [develop]
+
+jobs:
+  sast-testing:
+    runs-on: ubuntu-latest
+    name: Analyse
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+   
+        fetch-depth: 2
+
+  
+    - run: git checkout HEAD^2
+      if: ${{ github.event_name == 'pull_request' }}
+    - name: Install and Build gh-page
+        working-directory: gh-page
+        run: |
+          npm install
+          npm run build
+    - name: Install and Build Azure Function
+        run: |
+         npm install
+         npm run build
+        working-directory: flavours/nodejs/functionapp
+    - name : Sast Testing using njjscan
+        run: |
+          sudo apt-get install python3-setuptools
+          sudo pip3 install --upgrade njsscan
+          njsscan .
